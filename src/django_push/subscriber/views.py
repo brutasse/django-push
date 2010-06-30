@@ -1,0 +1,65 @@
+import datetime
+import feedparser
+
+from django.http import HttpResponse, Http404
+from django.shortcuts import get_object_or_404
+
+from django_push.subscriber.signals import updated
+
+
+def callback(request, pk):
+    subscription = get_object_or_404(Subscription, pk=pk)
+
+    if request.method == 'GET':
+        mode = request.GET['hub.mode']
+        topic = request.GET['hub.topic']
+        challenge = request.GET['hub.challenge']
+        lease_seconds = request.GET.get('hub.lease_seconds', None)
+        verify_token = request.GET.get('verify_token', None)
+
+        if mode == 'subscribe':
+            if not verify_token.startswith(mode):
+                raise Http404
+
+            invalid_subscription = any(
+                all(
+                    verify_token is not None,
+                    subscription.verify_token != verify_token,
+                ),
+                topic != subscription.topic,
+            )
+            if invalid_subscription:
+                raise Http404
+
+            subscription.verified = True
+            if lease_seconds is not None:
+                subscription.set_expiration(int(lease_seconds))
+
+            subscription.save()
+            return HttpResponse(challenge)
+
+        if mode == 'unsubscribe':
+            # TODO
+            pass
+
+    elif request.method == 'POST':
+        parsed = feedparser.parse(request.raw_post_data)
+        if parsed.feed.links:
+            hub_url = subscription.hub
+            topic_url = subscription.topic
+            for link in parsed.feed.links:
+                if link['rel'] == 'hub':
+                    hub_url = link['href']
+                elif link['rel'] == 'self':
+                    topic_url = link['href']
+
+            needs_update = any(
+                hub_url and subscription.hub != hub_url,
+                topic_url != subscription.topic,
+            )
+
+            if needs_update:
+                Subscription.objects.subscribe(topic_url, hub=hub_url)
+
+            updated.send(sender=subscription, notification=parsed)
+            return HttpResponse('')

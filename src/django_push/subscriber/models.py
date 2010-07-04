@@ -36,10 +36,10 @@ class SubscriptionManager(models.Manager):
             # If not present, the lease is permanent
         response = self.subscription_request(hub, params)
 
-        info = response.info
-        if info.status == 204:
+        status = response.code
+        if status == 204:
             subscription.verified = True
-        elif info.status == 202:  # deferred verification
+        elif status == 202:  # deferred verification
             subscription.verified = False
         else:
             error = response.read()
@@ -58,15 +58,23 @@ class SubscriptionManager(models.Manager):
                     for subvalue in value:
                         yield key, str(subvalue)
         data = urllib.urlencode(list(get_post_data()))
-        return urllib2.urlopen(hub, data)
+        try:
+            response = urllib2.urlopen(hub, data)
+        except urllib2.HTTPError, e:
+            if e.code in (202, 204):
+                return e
+            else:
+                raise
 
 
 class Subscription(models.Model):
-    callback = models.URLField(_('Callback'), max_length=1023)
+    hub = models.URLField(_('Callback'), max_length=1023)
     topic = models.URLField(_('Topic'), max_length=1023)
     verified = models.BooleanField(_('Verified'), default=False)
-    verifify_token = models.CharField(_('Verify Token'), max_length=255)
-    lease_expiration = models.DateTimeField(_('Lease expiration'))
+    verify_token = models.CharField(_('Verify Token'), max_length=255)
+    lease_expiration = models.DateTimeField(_('Lease expiration'), null=True)
+
+    objects = SubscriptionManager()
 
     def generate_token(self, mode):
         digest = sha_constructor('%s%i%s' % (settings.SECRET_KEY,
@@ -74,3 +82,7 @@ class Subscription(models.Model):
         self.verify_token = mode[:20] + digest
         self.save()
         return self.verify_token
+
+    def set_expiration(self, seconds):
+        self.lease_expiration = datetime.datetime.utcnow() + datetime.timedelta(seconds=seconds)
+        self.save()

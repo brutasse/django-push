@@ -4,6 +4,7 @@ import feedparser
 from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404
 
+from django_push.subscriber.models import Subscription
 from django_push.subscriber.signals import updated
 
 
@@ -15,19 +16,19 @@ def callback(request, pk):
         topic = request.GET['hub.topic']
         challenge = request.GET['hub.challenge']
         lease_seconds = request.GET.get('hub.lease_seconds', None)
-        verify_token = request.GET.get('verify_token', None)
+        verify_token = request.GET.get('hub.verify_token', None)
 
         if mode == 'subscribe':
             if not verify_token.startswith(mode):
                 raise Http404
 
-            invalid_subscription = any(
-                all(
+            invalid_subscription = any((
+                all((
                     verify_token is not None,
                     subscription.verify_token != verify_token,
-                ),
+                )),
                 topic != subscription.topic,
-            )
+            ))
             if invalid_subscription:
                 raise Http404
 
@@ -39,7 +40,7 @@ def callback(request, pk):
             return HttpResponse(challenge)
 
         if mode == 'unsubscribe':
-            # TODO
+            # TODO
             pass
 
     elif request.method == 'POST':

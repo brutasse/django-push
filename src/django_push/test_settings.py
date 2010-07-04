@@ -7,10 +7,11 @@ DATABASES = {
 }
 
 INSTALLED_APPS = [
+    'django.contrib.sites',
     'django_push',
     'django_push.subscriber',
 ]
 
-ROOT_URLCONF = ['django_push.urls']
+ROOT_URLCONF = 'django_push.urls'
 
 SITE_ID = 1

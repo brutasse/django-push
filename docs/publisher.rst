@@ -75,6 +75,7 @@ example, if a model has a ``publish()`` method:
 .. code-block:: python
 
     from django.contrib.sites.models import Site
+    from django.core.urlresolvers import reverse
     from django.db import models
 
     from django_push.publisher import ping_hub
@@ -88,12 +89,13 @@ example, if a model has a ``publish()`` method:
             self.save()
 
             ping_hub('http://%s%s' % (Site.objects.get_current(),
-                                      self.get_absolute_url()))
+                                      reverse('feed_for_mymodel')))
 
-``ping_hub`` has to be called with a full URL as parameter, using either the
-Sites framework or your own mechanism. By default, ``ping_hub`` will ping the
-hub declared in the ``PUSH_HUB`` setting. A different hub can set using an
-optional ``hub_url`` keyword argument:
+``ping_hub`` has to be called with the full URL of the Atom feed as parameter,
+using either the Sites framework or your own mechanism to add the domain
+name. By default, ``ping_hub`` will ping the hub declared in the ``PUSH_HUB``
+setting. A different hub can be set using an optional ``hub_url`` keyword
+argument:
 
 .. code-block:: python
 

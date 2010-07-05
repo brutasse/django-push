@@ -13,8 +13,8 @@ on Atom and HTTP and allowing near-instant notifications of feed updates.
   feed is updated with a new entry, they ping their *hub* saying they have
   some new content. The hub is also declared in the Atom feed.
 
-* Subscribers are feed readers. When the fetch a feed, they notice a hub is
-  declared and subscribe to the feed's update with the hub.
+* Subscribers are feed readers or aggregators. When the fetch a feed, they
+  notice a hub is declared and subscribe to the feed's update with the hub.
 
 * Hubs fetches the published feed when it gets a ping from the publisher and
   takes care of notifying all the subscribers.
@@ -22,7 +22,18 @@ on Atom and HTTP and allowing near-instant notifications of feed updates.
 .. _PubSubHubbub: http://code.google.com/p/pubsubhubbub/
 
 This library provides hooks to add PubSubHubbub support to your Django
-project: you can use it to be a publisher, a subscriber, a hub or all three.
+project: you can use it to be a publisher, a subscriber, a hub or all three
+(actually, the hub isn't implemented yet but I'm sure you can help).
+
+Installation
+------------
+
+.. code-block:: bash
+
+    pip install -U django-push
+
+Manual
+------
 
 .. toctree::
    :maxdepth: 2

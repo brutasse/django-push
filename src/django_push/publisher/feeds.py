@@ -4,13 +4,13 @@ from django.utils.feedgenerator import Atom1Feed
 
 
 class HubAtom1Feed(Atom1Feed):
-    def add_root_elemets(self, handler):
-        super(HubAtom1Feed, self).add_root_elemets(handler)
+    def add_root_elements(self, handler):
+        super(HubAtom1Feed, self).add_root_elements(handler)
 
         hub = self.feed.get('hub')
         if hub is not None:
-            handler.addQuickElement(u'link', {u'rel': u'hub',
-                                              u'href': hub})
+            handler.addQuickElement(u'link', '', {u'rel': u'hub',
+                                                  u'href': hub})
 
 
 class Feed(BaseFeed):

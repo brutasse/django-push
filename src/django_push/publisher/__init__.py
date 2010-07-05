@@ -16,8 +16,9 @@ def ping_hub(feed_url, hub_url=None):
     headers = {'Content-Type': 'application/x-www-form-urlencoded'}
     data = urllib.urlencode(params)
     try:
-        response = urllib2.urlopen(hub_url, data, headers)
+        request = urllib2.Request(hub_url, data, headers)
+        response = urllib2.urlopen(request)
     except urllib2.HTTPError, e:
         if hasattr(e, 'code') and e.code == 204:
-            pass
+            return
         raise

@@ -3,19 +3,21 @@ Django-PuSH
 
 PubSubHubbub support for Django
 
-Publisher
----------
+Usage
+-----
 
-TBA
+The documentation is at http://packages.python.org/django-push
 
+Contributing
+------------
 
-Subscriber
-----------
+* The project is on bitbucket: http://bitbucket.org/bruno/django-push
 
-TBA
+* To setup a development environment, run::
 
+      python bootstrap.py
+      ./bin/buildout
 
-Hub
----
+  Then run the tests:
 
-TBA
+      ./bin/test

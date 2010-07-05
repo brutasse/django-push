@@ -16,7 +16,7 @@ on Atom and HTTP and allowing near-instant notifications of feed updates.
 * Subscribers are feed readers. When the fetch a feed, they notice a hub is
   declared and subscribe to the feed's update with the hub.
 
-* Hubs fetches the published feed when it gets a ping from the publicher and
+* Hubs fetches the published feed when it gets a ping from the publisher and
   takes care of notifying all the subscribers.
 
 .. _PubSubHubbub: http://code.google.com/p/pubsubhubbub/
@@ -31,3 +31,18 @@ project: you can use it to be a publisher, a subscriber, a hub or all three.
    subscriber
    hub
 
+
+Other projects
+--------------
+
+* `SubHub`_ is a personal hub for your own feeds.
+
+.. _SubHub: https://launchpad.net/subhub
+
+* `djpubsubhubbub`_ implements the subscriber part of PubSubHubbub.
+
+.. _djpubsubhubbub: https://git.participatoryculture.org/djpubsubhubbub/
+
+* `PubSubHubbub_Publisher`_ is a publisher client for Python.
+
+.. _PubSubHubbub_Publisher: http://pypi.python.org/pypi/PubSubHubbub_Publisher/1.0

@@ -89,7 +89,7 @@ management command. For instance, this could be run once a day:
             renewed = Subscription.objects.subscribe(subscription.topic,
                                                      subscription.hub)
 
-This way you can renew you subscriptions before they completely expire.
+This way you can renew your subscriptions before they completely expire.
 
 Listening to Hubs' notifications
 --------------------------------

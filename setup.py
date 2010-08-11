@@ -11,7 +11,7 @@ setup(
     url = 'http://github.com/brutasse/django-push',
     license = 'BSD',
     description = 'PubSubHubbub (PuSH) support for Django',
-    long_description = read('README'),
+    long_description = read('README.rst'),
 
     author = 'Bruno Renié',
     author_email = 'bruno@renie.fr',

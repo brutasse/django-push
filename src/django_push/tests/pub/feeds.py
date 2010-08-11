@@ -16,6 +16,9 @@ class EntryFeed(Feed):
     def item_subtitle(self, item):
         return item.content
 
+    def item_pubdate(self, item):
+        return item.timestamp
+
 
 class CustomHubFeed(EntryFeed):
     hub = 'http://myhub.com'

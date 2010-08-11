@@ -8,3 +8,4 @@ eggs
 parts
 django_push.egg-info
 docs/_build
+push.sqlite3

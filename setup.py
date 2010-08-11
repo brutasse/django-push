@@ -8,7 +8,7 @@ def read(file_name):
 setup(
     name = 'django-push',
     version = '0.1',
-    url = 'http://bitbucket.org/bruno/django-push',
+    url = 'http://github.com/brutasse/django-push',
     license = 'BSD',
     description = 'PubSubHubbub (PuSH) support for Django',
     long_description = read('README'),

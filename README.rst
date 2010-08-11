@@ -1,5 +1,3 @@
-.. -*- restructuredtext -*-
-
 Django-PuSH
 ===========
 
@@ -13,7 +11,7 @@ The documentation is at http://packages.python.org/django-push
 Contributing
 ------------
 
-* The project is on bitbucket: http://bitbucket.org/bruno/django-push
+* The project is on github: http://github.com/brutasse/django-push
 * To setup a development environment, run::
 
       python bootstrap.py

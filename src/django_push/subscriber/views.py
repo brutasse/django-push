@@ -3,11 +3,13 @@ import feedparser
 
 from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404
+from django.views.decorators.csrf import csrf_exempt
 
 from django_push.subscriber.models import Subscription
 from django_push.subscriber.signals import updated
 
 
+@csrf_exempt
 def callback(request, pk):
     subscription = get_object_or_404(Subscription, pk=pk)
 
@@ -54,10 +56,10 @@ def callback(request, pk):
                 elif link['rel'] == 'self':
                     topic_url = link['href']
 
-            needs_update = any(
+            needs_update = any((
                 hub_url and subscription.hub != hub_url,
                 topic_url != subscription.topic,
-            )
+            ))
 
             if needs_update:
                 Subscription.objects.subscribe(topic_url, hub=hub_url)

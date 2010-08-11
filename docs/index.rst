@@ -25,12 +25,25 @@ This library provides hooks to add PubSubHubbub support to your Django
 project: you can use it to be a publisher, a subscriber, a hub or all three
 (actually, the hub isn't implemented yet but I'm sure you can help).
 
+.. warning:: Django 1.2 only!
+
+    **Django-PuSH** uses the new syndication framework from Django 1.2 as well
+    as the ``csrf_exempt`` decorator. This makes it incompatible with older
+    versions of Django.
+
+    If you think this is a shame and you want to help, I'd be more than happy
+    to `integrate your patches`_!
+
+    .. _integrate your patches: http://github.com/brutasse/django-push
+
 Installation
 ------------
 
 .. code-block:: bash
 
     pip install -U django-push
+
+Also make sure you have pip-installed ``feedparser``.
 
 Manual
 ------
@@ -46,7 +59,8 @@ Manual
 Other projects
 --------------
 
-* `SubHub`_ is a personal hub for your own feeds.
+* `SubHub`_ is a personal hub for your own feeds, although it's not completely
+  real-time.
 
 .. _SubHub: https://launchpad.net/subhub
 

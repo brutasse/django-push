@@ -21,6 +21,7 @@ class SubscriptionManager(models.Manager):
             hub = get_hub(topic)
 
         subscription, created = self.get_or_create(hub=hub, topic=topic)
+
         callback_url = reverse('subscriber_callback', args=[subscription.id])
         callback = 'http://%s%s' % (Site.objects.get_current(), callback_url)
 
@@ -60,6 +61,7 @@ class SubscriptionManager(models.Manager):
         data = urllib.urlencode(list(get_post_data()))
         try:
             response = urllib2.urlopen(hub, data)
+            return response
         except urllib2.HTTPError, e:
             if e.code in (202, 204):
                 return e
@@ -76,6 +78,9 @@ class Subscription(models.Model):
 
     objects = SubscriptionManager()
 
+    def __unicode__(self):
+        return u'%s: %s' % (self.topic, self.hub)
+
     def generate_token(self, mode):
         digest = sha_constructor('%s%i%s' % (settings.SECRET_KEY,
                                              self.pk, mode)).hexdigest()
@@ -86,3 +91,8 @@ class Subscription(models.Model):
     def set_expiration(self, seconds):
         self.lease_expiration = datetime.datetime.utcnow() + datetime.timedelta(seconds=seconds)
         self.save()
+
+    def has_expired(self):
+        if self.lease_expiration:
+            return datetime.datetime.utcnow() > self.lease_expiration
+        return False

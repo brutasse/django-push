@@ -13,10 +13,10 @@ on Atom and HTTP and allowing near-instant notifications of feed updates.
   feed is updated with a new entry, they ping their *hub* saying they have
   some new content. The hub is also declared in the Atom feed.
 
-* Subscribers are feed readers or aggregators. When the fetch a feed, they
+* Subscribers are feed readers or aggregators. When they fetch a feed, they
   notice a hub is declared and subscribe to the feed's update with the hub.
 
-* Hubs fetches the published feed when it gets a ping from the publisher and
+* Hubs fetch the published feed when it gets a ping from the publisher and
   takes care of notifying all the subscribers.
 
 .. _PubSubHubbub: http://code.google.com/p/pubsubhubbub/
@@ -55,6 +55,23 @@ Manual
    subscriber
    hub
 
+Upgrading
+---------
+
+If you're using ``django_push.subscriber`` 0.1 and you need to upgrade to 0.2,
+here is what you need to do:
+
+* Run the following SQL query to add the ``secret`` column:
+
+  .. code-block:: sql
+
+    ALTER TABLE subscriber_subscription ADD secret varchar(255);
+
+* If you want your subscriptions to use the `authenticated content
+  distribution`_ mechanism, you need to re-subscribe to all your existing
+  subscriptions.
+
+.. _authenticated content distribution: http://pubsubhubbub.googlecode.com/svn/trunk/pubsubhubbub-core-0.3.html#authednotify
 
 Other projects
 --------------

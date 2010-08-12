@@ -20,3 +20,9 @@ Contributing
   Then run the tests::
 
       ./bin/test
+
+Changelog
+---------
+
+* 0.2 - 2010-08-12: signature handling of content distribution requests
+* 0.1 - 2010-08-11: initial release

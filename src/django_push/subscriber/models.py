@@ -1,4 +1,5 @@
 import datetime
+import random
 import urllib
 import urllib2
 
@@ -25,12 +26,19 @@ class SubscriptionManager(models.Manager):
         callback_url = reverse('subscriber_callback', args=[subscription.id])
         callback = 'http://%s%s' % (Site.objects.get_current(), callback_url)
 
+        if created:
+            chars = 'abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)'
+            secret = ''.join([random.choice(chars) for i in range(50)])
+        else:
+            secret = subscription.secret
+
         params = {
             'mode': 'subscribe',
             'callback': callback,
             'topic': topic,
             'verify': ('async', 'sync'),
             'verify_token': subscription.generate_token('subscribe'),
+            'secret': secret,
         }
         if lease_seconds is not None:
             params['lease_seconds'] = lease_seconds
@@ -46,6 +54,7 @@ class SubscriptionManager(models.Manager):
             error = response.read()
             raise urllib2.HTTPError('Subscription error on %s: %s' % (topic,
                                                                       error))
+        subscription.secret = secret
         subscription.save()
         return subscription
 
@@ -75,6 +84,7 @@ class Subscription(models.Model):
     verified = models.BooleanField(_('Verified'), default=False)
     verify_token = models.CharField(_('Verify Token'), max_length=255)
     lease_expiration = models.DateTimeField(_('Lease expiration'), null=True)
+    secret = models.CharField(_('Secret'), max_length=255, null=True)
 
     objects = SubscriptionManager()
 

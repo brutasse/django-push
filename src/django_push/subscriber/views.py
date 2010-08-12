@@ -1,5 +1,7 @@
 import datetime
 import feedparser
+import hashlib
+import hmac
 
 from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404
@@ -46,6 +48,19 @@ def callback(request, pk):
             pass
 
     elif request.method == 'POST':
+        signature = request.META.get('HTTP_X_HUB_SIGNATURE', None)
+        if subscription.secret:
+            if signature is None:
+                # Acknowledging receipt but ignoring the message
+                return HttpResponse('')
+
+            hasher = hmac.new(str(subscription.secret),
+                              request.raw_post_data,
+                              hashlib.sha1)
+            digest = 'sha1=%s' % hasher.hexdigest()
+            if signature != digest:
+                return HttpResponse('')
+
         parsed = feedparser.parse(request.raw_post_data)
         if parsed.feed.links:
             hub_url = subscription.hub

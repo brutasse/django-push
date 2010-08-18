@@ -23,9 +23,6 @@ class SubscriptionManager(models.Manager):
 
         subscription, created = self.get_or_create(hub=hub, topic=topic)
 
-        callback_url = reverse('subscriber_callback', args=[subscription.id])
-        callback = 'http://%s%s' % (Site.objects.get_current(), callback_url)
-
         if created:
             chars = 'abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)'
             secret = ''.join([random.choice(chars) for i in range(50)])
@@ -34,7 +31,7 @@ class SubscriptionManager(models.Manager):
 
         params = {
             'mode': 'subscribe',
-            'callback': callback,
+            'callback': subscription.callback_url,
             'topic': topic,
             'verify': ('async', 'sync'),
             'verify_token': subscription.generate_token('subscribe'),
@@ -42,7 +39,7 @@ class SubscriptionManager(models.Manager):
         }
         if lease_seconds is not None:
             params['lease_seconds'] = lease_seconds
-            # If not present, the lease is permanent
+            # If not present, the lease duration is decided by the hub
         response = self.subscription_request(hub, params)
 
         status = response.code
@@ -57,6 +54,27 @@ class SubscriptionManager(models.Manager):
         subscription.secret = secret
         subscription.save()
         return subscription
+
+    def unsubscribe(self, topic, hub=None):
+        if hub is None:
+            hub = get_hub(topic)
+
+        subscription = Subscription.objects.get(topic=topic, hub=hub)
+
+        params = {
+            'mode': 'unsubscribe',
+            'callback': subscription.callback_url,
+            'topic': topic,
+            'verify': ('async', 'sync'),
+            'verify_token': subscription.generate_token('unsubscribe'),
+        }
+        response = self.subscription_request(hub, params)
+
+        if not response.code in (202, 204):
+            error = response.read()
+            raise urllib2.HTTPError('Unsubscription error on %s: %s' % (topic,
+                                                                        error))
+
 
     def subscription_request(self, hub, params):
         def get_post_data():
@@ -106,3 +124,8 @@ class Subscription(models.Model):
         if self.lease_expiration:
             return datetime.datetime.utcnow() > self.lease_expiration
         return False
+
+    @property
+    def callback_url(self):
+        callback_url = reverse('subscriber_callback', args=[self.id])
+        return 'http://%s%s' % (Site.objects.get_current(), callback_url)

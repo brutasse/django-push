@@ -44,8 +44,8 @@ def callback(request, pk):
             return HttpResponse(challenge)
 
         if mode == 'unsubscribe':
-            # TODO
-            pass
+            subscription.delete()
+            return HttpResponse(challenge)
 
     elif request.method == 'POST':
         signature = request.META.get('HTTP_X_HUB_SIGNATURE', None)

@@ -26,6 +26,7 @@ Let's assume you're already parsing feeds. Your code may look like this:
 
     import feedparser
 
+
     parsed = feedparser.parse('http://example.com/feed/')
     for entry in parsed.entries:
         # Do something with the entries: store them, email them...
@@ -50,6 +51,7 @@ Now that you found a hub, you can create a subscription:
 
     from django_push.subscriber.models import Subscription
 
+
     subscription = Subscription.objects.subscribe(feed_url, hub=hub)
 
 ``subscribe()`` takes the feed URL as a required argument. If the hub is not
@@ -71,8 +73,8 @@ Renewing the leases
 
 As we can see, the hub subscription can be valid for a certain amount of time.
 Before they actually expire, hubs must send subscription requests to recheck
-with subscribers if the subscription is still valid. Thus subscriptions will
-be renewed automatically.
+with subscribers if the subscription is still valid. Thus **subscriptions will
+be renewed automatically**.
 
 However, you can always renew the leases manually before the expire to make
 sure they are not forgotten by the hub. For instance, this could be run once
@@ -84,6 +86,7 @@ a day:
 
     from django_push.subscriber.models import Subscription
 
+
     tomorrow = datetime.datetime.utcnow() + datetime.timedelta(days=1)
 
     for subscription in Subscription.objects.filter(verified=True):
@@ -93,6 +96,30 @@ a day:
         if subscription.lease_expiration < tomorrow:
             renewed = Subscription.objects.subscribe(subscription.topic,
                                                      subscription.hub)
+
+Unsubscribing
+-------------
+
+If you want to stop receiving notification for a feed's updates, you need to
+unsubscribe. This is as simple as doing:
+
+.. code-block:: python
+
+    from django_push.subscriber import Subscription
+
+
+    Subscription.objects.unsubscribe('http://example.com/feed')
+
+The hub is notified to cancel the subscription and the Subscription object is
+deleted. You can also specify the hub if you want to:
+
+.. code-block:: python
+
+    Subscription.objects.unsubscribe(feed_url, hub=hub_url)
+
+If you don't provide the ``hub`` keyword argument, the feed is fetched to find
+the hub URL. However specifying the hub may be useful if the feed has several
+hubs.
 
 Listening to Hubs' notifications
 --------------------------------
@@ -209,6 +236,7 @@ Then we can define a receiver function this way:
 
         for feed in Feed.objects.filter(url=url):
             for entry in entries:
+                entry.id = None
                 entry.feed = feed
                 entry.save(force_insert=True)
 

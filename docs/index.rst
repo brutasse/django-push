@@ -55,11 +55,18 @@ Manual
    subscriber
    hub
 
+Changelog
+---------
+
+* 0.3 - 2010-08-18: subscribers can unsubscribe.
+* 0.2 - 2010-08-12: signature handling of content distribution requests.
+* 0.1 - 2010-08-11: initial release.
+
 Upgrading
 ---------
 
-If you're using ``django_push.subscriber`` 0.1 and you need to upgrade to 0.2,
-here is what you need to do:
+If you're using ``django_push.subscriber`` 0.1 and you need to upgrade to 0.2
+or higher, here is what you need to do:
 
 * Run the following SQL query to add the ``secret`` column:
 

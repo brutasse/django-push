@@ -7,7 +7,7 @@ def read(file_name):
 
 setup(
     name = 'django-push',
-    version = '0.2',
+    version = '0.3',
     url = 'http://github.com/brutasse/django-push',
     license = 'BSD',
     description = 'PubSubHubbub (PuSH) support for Django',
@@ -22,6 +22,10 @@ setup(
     install_requires = ['setuptools'],
 
     classifiers = [
-        ## FIXME
+        'Development Status :: 3 - Alpha',
+        'Framework :: Django',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: BSD License',
+        'Programming Language :: Python :: 2',
     ],
 )

@@ -70,8 +70,13 @@ Renewing the leases
 -------------------
 
 As we can see, the hub subscription can be valid for a certain amount of time.
-Thus it is appropriate to renew the leases that will expire soon using a
-management command. For instance, this could be run once a day:
+Before they actually expire, hubs must send subscription requests to recheck
+with subscribers if the subscription is still valid. Thus subscriptions will
+be renewed automatically.
+
+However, you can always renew the leases manually before the expire to make
+sure they are not forgotten by the hub. For instance, this could be run once
+a day:
 
 .. code-block:: python
 
@@ -88,8 +93,6 @@ management command. For instance, this could be run once a day:
         if subscription.lease_expiration < tomorrow:
             renewed = Subscription.objects.subscribe(subscription.topic,
                                                      subscription.hub)
-
-This way you can renew your subscriptions before they completely expire.
 
 Listening to Hubs' notifications
 --------------------------------

@@ -14,9 +14,10 @@ Contributing
 * The project is on github: http://github.com/brutasse/django-push
 * To setup a development environment, run::
 
-      python bootstrap.py
-      ./bin/buildout
+      mkvirtualenv django-push
+      pip install -r requirements.txt
 
   Then run the tests::
 
-      ./bin/test
+      cd src/django_push
+      python manage.py test

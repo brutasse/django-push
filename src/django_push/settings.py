@@ -4,7 +4,6 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': 'push.sqlite3',
-        'TEST_NAME': ':memory:',
     },
 }
 

@@ -1,12 +1,5 @@
 .pyc
-.installed.cfg
-bin
-develop-eggs
+.venv
 dist
-downloads
-eggs
-parts
 django_push.egg-info
-docs/_build
 push.sqlite3
-build

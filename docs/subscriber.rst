@@ -1,12 +1,10 @@
 Being a subscriber
 ==================
 
-First:
-
-* You need to add ``django_push.subscriber`` to your ``INSTALLED_APPS`` and
+* Add ``django_push.subscriber`` to your ``INSTALLED_APPS`` and
   run ``manage.py syncdb``
 
-* You need to include ``django_push.subscriber.urls`` in your main urlconf:
+* Include ``django_push.subscriber.urls`` in your main urlconf:
 
   .. code-block:: python
 
@@ -15,7 +13,7 @@ First:
           url(r'^subscriber/', include('django_push.subscriber.urls')),
       )
 
-* You need to make sure the Sites framework is correctly configured.
+* Make sure the Sites framework is correctly configured.
 
 Initial subscription
 --------------------

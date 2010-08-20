@@ -23,11 +23,15 @@ class SubscriptionManager(models.Manager):
 
         subscription, created = self.get_or_create(hub=hub, topic=topic)
 
-        if created:
+        if not created:
+            if subscription.verified and not subscription.has_expired():
+                return subscription
+
+        if subscription.secret:
+            secret = subscription.secret
+        else:
             chars = 'abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)'
             secret = ''.join([random.choice(chars) for i in range(50)])
-        else:
-            secret = subscription.secret
 
         params = {
             'mode': 'subscribe',
@@ -43,10 +47,8 @@ class SubscriptionManager(models.Manager):
         response = self.subscription_request(hub, params)
 
         status = response.code
-        if status == 204:
+        if status in (202, 204):  # 202: deferred verification
             subscription.verified = True
-        elif status == 202:  # deferred verification
-            subscription.verified = False
         else:
             error = response.read()
             raise urllib2.HTTPError('Subscription error on %s: %s' % (topic,

@@ -97,6 +97,7 @@ class SubscriptionManager(models.Manager):
             #else
             # FIXME re-raising may throw a 500 error on notifications
             #    raise
+            return e
 
 
 class Subscription(models.Model):

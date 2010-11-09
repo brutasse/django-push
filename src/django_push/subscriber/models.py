@@ -94,8 +94,9 @@ class SubscriptionManager(models.Manager):
         except urllib2.HTTPError, e:
             if e.code in (202, 204):
                 return e
-            else:
-                raise
+            #else
+            # FIXME re-raising may throw a 500 error on notifications
+            #    raise
 
 
 class Subscription(models.Model):

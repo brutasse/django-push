@@ -7,7 +7,7 @@ from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 
-from django_push.subscriber.models import Subscription
+from django_push.subscriber.models import Subscription, SubscriptionError
 from django_push.subscriber.signals import updated
 
 
@@ -77,7 +77,10 @@ def callback(request, pk):
             ))
 
             if needs_update:
-                Subscription.objects.subscribe(topic_url, hub=hub_url)
+                try:
+                    Subscription.objects.subscribe(topic_url, hub=hub_url)
+                except SubscriptionError, e:
+                    pass
 
             updated.send(sender=subscription, notification=parsed)
             return HttpResponse('')

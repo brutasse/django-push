@@ -15,6 +15,10 @@ from django_push.subscriber.utils import get_hub
 LEASE_SECONDS = getattr(settings, 'PUSH_LEASE_SECONDS', None)
 
 
+class SubscriptionError(Exception):
+    pass
+
+
 class SubscriptionManager(models.Manager):
 
     def subscribe(self, topic, hub=None, lease_seconds=LEASE_SECONDS):
@@ -51,7 +55,7 @@ class SubscriptionManager(models.Manager):
             subscription.verified = True
         else:
             error = response.read()
-            raise urllib2.HTTPError('Subscription error on %s: %s' % (topic,
+            raise SubscriptionError('Subscription error on %s: %s' % (topic,
                                                                       error))
         subscription.secret = secret
         subscription.save()

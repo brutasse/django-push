@@ -1,2 +1,2 @@
 FeedParser==4.1
-Django==1.2.1
+Django==1.2.4

@@ -22,6 +22,6 @@ def hub_credentials(hub_url):
 def get_hub_credentials(hub_url):
     creds_path = getattr(settings, 'PUSH_CREDENTIALS',
                          'django_push.subscriber.utils.hub_credentials')
-    creds_path, creds_function = creds_path.resplit('.', 1)
+    creds_path, creds_function = creds_path.rsplit('.', 1)
     creds_module = import_module(creds_path)
     return getattr(creds_module, creds_function)(hub_url)

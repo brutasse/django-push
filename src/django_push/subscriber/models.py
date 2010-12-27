@@ -1,3 +1,4 @@
+import base64
 import datetime
 import random
 import urllib
@@ -13,6 +14,8 @@ from django.utils.translation import ugettext_lazy as _
 from django_push.subscriber.utils import get_hub
 
 LEASE_SECONDS = getattr(settings, 'PUSH_LEASE_SECONDS', None)
+BASIC_AUTH_USERNAME = getattr(settings, 'PUSH_BASIC_AUTH_USERNAME', None)
+BASIC_AUTH_PASSWORD = getattr(settings, 'PUSH_BASIC_AUTH_PASSWORD', None)
 
 
 class SubscriptionError(Exception):
@@ -93,7 +96,13 @@ class SubscriptionManager(models.Manager):
                         yield key, str(subvalue)
         data = urllib.urlencode(list(get_post_data()))
         try:
-            response = urllib2.urlopen(hub, data)
+            headers = {}
+            if BASIC_AUTH_USERNAME:
+                encoded = base64.encodestring(
+                    "%s:%s" % (BASIC_AUTH_USERNAME, BASIC_AUTH_PASSWORD))[:-1]
+                headers['Authorization'] = "Basic %s" % (encoded,)
+            request = urllib2.Request(hub, data, headers)
+            response = urllib2.urlopen(request)
             return response
         except urllib2.HTTPError, e:
             if e.code in (202, 204):

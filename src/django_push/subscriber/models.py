@@ -11,11 +11,9 @@ from django.db import models
 from django.utils.hashcompat import sha_constructor
 from django.utils.translation import ugettext_lazy as _
 
-from django_push.subscriber.utils import get_hub
+from django_push.subscriber.utils import get_hub, get_hub_credentials
 
 LEASE_SECONDS = getattr(settings, 'PUSH_LEASE_SECONDS', None)
-BASIC_AUTH_USERNAME = getattr(settings, 'PUSH_BASIC_AUTH_USERNAME', None)
-BASIC_AUTH_PASSWORD = getattr(settings, 'PUSH_BASIC_AUTH_PASSWORD', None)
 
 
 class SubscriptionError(Exception):
@@ -97,10 +95,12 @@ class SubscriptionManager(models.Manager):
         data = urllib.urlencode(list(get_post_data()))
         try:
             headers = {}
-            if BASIC_AUTH_USERNAME:
+            credentials = get_hub_credentials(hub)
+            if credentials is not None:
+                username, password = credentials
                 encoded = base64.encodestring(
-                    "%s:%s" % (BASIC_AUTH_USERNAME, BASIC_AUTH_PASSWORD))[:-1]
-                headers['Authorization'] = "Basic %s" % (encoded,)
+                    "%s:%s" % (username, password))[:-1]
+                headers['Authorization'] = "Basic %s" % encoded
             request = urllib2.Request(hub, data, headers)
             response = urllib2.urlopen(request)
             return response

@@ -119,6 +119,29 @@ If you don't provide the ``hub`` keyword argument, the feed is fetched to find
 the hub URL. However specifying the hub may be useful if the feed has several
 hubs.
 
+Authentication
+--------------
+
+Some hubs may require basic auth for subscription requests. Django-PuSH
+provides a way to supply authentication information via a callable that takes
+the hub URL as a parameter and returns None (no authentication required) or a
+(username, password) tuple. For instance:
+
+.. code-block:: python
+
+    def custom_hub_credentials(hub_url):
+        if hub_url == 'http://superfeedr.com/hubbub':
+            return ('my_superfeedr_username', 'password')
+
+And then, set the ``PUSH_CREDENTIALS`` setting to your custom function:
+
+.. code-block:: python
+
+    PUSH_CREDENTIALS = 'path.to.custom_hub_credentials'
+
+This way you have full control of the way credentials are stored (database,
+settings, filesystem…)
+
 Listening to Hubs' notifications
 --------------------------------
 

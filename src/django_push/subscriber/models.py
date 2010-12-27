@@ -81,7 +81,7 @@ class SubscriptionManager(models.Manager):
 
         if not response.code in (202, 204):
             error = response.read()
-            raise urllib2.HTTPError('Unsubscription error on %s: %s' % (topic,
+            raise SubscriptionError('Unsubscription error on %s: %s' % (topic,
                                                                         error))
 
 

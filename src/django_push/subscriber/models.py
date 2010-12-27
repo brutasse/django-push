@@ -13,8 +13,6 @@ from django.utils.translation import ugettext_lazy as _
 
 from django_push.subscriber.utils import get_hub, get_hub_credentials
 
-LEASE_SECONDS = getattr(settings, 'PUSH_LEASE_SECONDS', None)
-
 
 class SubscriptionError(Exception):
     pass
@@ -22,7 +20,10 @@ class SubscriptionError(Exception):
 
 class SubscriptionManager(models.Manager):
 
-    def subscribe(self, topic, hub=None, lease_seconds=LEASE_SECONDS):
+    def subscribe(self, topic, hub=None, lease_seconds=None):
+        if lease_seconds is None:
+            lease_seconds = getattr(settings, 'PUSH_LEASE_SECONDS', None)
+
         if hub is None:
             hub = get_hub(topic)
 

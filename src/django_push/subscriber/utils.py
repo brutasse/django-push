@@ -3,6 +3,7 @@ import feedparser
 from django.conf import settings
 from django.utils.importlib import import_module
 
+
 def get_hub(topic):
     parsed = feedparser.parse(topic)
     for link in parsed.feed.links:

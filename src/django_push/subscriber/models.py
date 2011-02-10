@@ -146,4 +146,6 @@ class Subscription(models.Model):
     @property
     def callback_url(self):
         callback_url = reverse('subscriber_callback', args=[self.id])
-        return 'http://%s%s' % (Site.objects.get_current(), callback_url)
+        use_ssl = getattr(settings, 'PUSH_SSL_CALLBACK', False)
+        scheme = use_ssl and 'https' or 'http'
+        return '%s://%s%s' % (scheme, Site.objects.get_current(), callback_url)

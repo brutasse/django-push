@@ -142,6 +142,16 @@ And then, set the ``PUSH_CREDENTIALS`` setting to your custom function:
 This way you have full control of the way credentials are stored (database,
 settings, filesystem…)
 
+Using HTTPS Callback URLs
+-------------------------
+
+By default, callback URLs will be constructed using HTTP. If you would like
+to use HTTPS for callback URLs, set the ``PUSH_SSL_CALLBACK`` setting to True:
+
+.. code-block:: python
+
+    PUSH_SSL_CALLBACK = True
+
 Listening to Hubs' notifications
 --------------------------------
 

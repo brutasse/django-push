@@ -62,10 +62,11 @@ def callback(request, pk):
                 return HttpResponse('')
 
         parsed = feedparser.parse(request.raw_post_data)
-        if parsed.feed.links:
+        links = getattr(parsed.feed, 'links', None)
+        if links:
             hub_url = subscription.hub
             topic_url = subscription.topic
-            for link in parsed.feed.links:
+            for link in links:
                 if link['rel'] == 'hub':
                     hub_url = link['href']
                 elif link['rel'] == 'self':
@@ -84,3 +85,5 @@ def callback(request, pk):
 
             updated.send(sender=subscription, notification=parsed)
             return HttpResponse('')
+
+        return HttpResponse()

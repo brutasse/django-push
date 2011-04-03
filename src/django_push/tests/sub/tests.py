@@ -2,6 +2,7 @@ import urllib2
 import feedparser
 from StringIO import StringIO
 
+from django.core.urlresolvers import reverse
 from django.test import TestCase
 
 from django_push.subscriber.models import Subscription
@@ -21,18 +22,17 @@ class SubTest(TestCase):
         self.signals.append(notification)
 
     def setUp(self):
-        self.subscription = Subscription(
+        self.subscription = Subscription.objects.create(
             hub='http://testhub.example.com', topic='http://example.com/foo',
             verified=True, verify_token='blah')
-        self.subscription.save()
         self.signals = []
         updated.connect(self.signal_handler)
 
     def test_callback_invalid_feed_data(self):
         """Ignore posts that contain invalid feed data in the raw post data."""
-        response = self.client.post(
-            '/pubsub/%d/' % (self.subscription.id,),
-            'foobar', content_type='application/atom+xml')
+        url = reverse('subscriber_callback', args=[self.subscription.pk])
+        response = self.client.post(url, 'foobar',
+                                    content_type='application/atom+xml')
         self.assertEquals(response.status_code, 200)
 
     def test_callback_valid_feed_data(self):
@@ -47,9 +47,9 @@ class SubTest(TestCase):
         </feed>
         """
         parsed = feedparser.parse(feed_data)
-        response = self.client.post(
-            '/pubsub/%d/' % (self.subscription.id,),
-            feed_data, content_type='application/atom+xml')
+        url = reverse('subscriber_callback', args=[self.subscription.pk])
+        response = self.client.post(url, feed_data,
+                                    content_type='application/atom+xml')
 
         # verify that we get a 200 and parsed as xml sent as a signal
         self.assertEquals(response.status_code, 200)

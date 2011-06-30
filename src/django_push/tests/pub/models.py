@@ -25,4 +25,4 @@ class Entry(models.Model):
         self.timestamp = datetime.datetime.utcnow()
         self.save()
 
-        ping_hub('http://testserver/pub/feed/') # Don't hardocde like that
+        ping_hub('http://testserver/pub/feed/')  # Don't hardocde like that

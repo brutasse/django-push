@@ -1,7 +1,6 @@
 import urllib2
 from StringIO import StringIO
 
-from django.contrib.sites.models import Site
 from django.test import TestCase
 
 from django_push.tests.pub.models import Entry
@@ -9,6 +8,7 @@ from django_push.tests.pub.models import Entry
 
 def mock_request(url, data, headers):
     return 'request'
+
 
 def mock_open(request):
     raise urllib2.HTTPError('request', 204, 'no-op', {}, StringIO(''))

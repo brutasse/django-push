@@ -1,4 +1,3 @@
-import datetime
 import feedparser
 import hashlib
 import hmac
@@ -80,7 +79,7 @@ def callback(request, pk):
             if needs_update:
                 try:
                     Subscription.objects.subscribe(topic_url, hub=hub_url)
-                except SubscriptionError, e:
+                except SubscriptionError:
                     pass
 
             updated.send(sender=subscription, notification=parsed)

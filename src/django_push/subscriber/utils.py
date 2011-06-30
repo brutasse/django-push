@@ -9,7 +9,7 @@ def get_hub(topic):
     for link in parsed.feed.links:
         if link['rel'] == 'hub':
             return link['href']
-    raise TypeError, "Hub not found"
+    raise TypeError("Hub not found")
 
 
 def hub_credentials(hub_url):

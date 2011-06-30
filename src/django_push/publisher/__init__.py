@@ -17,7 +17,7 @@ def ping_hub(feed_url, hub_url=None):
     data = urllib.urlencode(params)
     try:
         request = urllib2.Request(hub_url, data, headers)
-        response = urllib2.urlopen(request)
+        urllib2.urlopen(request)
     except urllib2.HTTPError, e:
         if hasattr(e, 'code') and e.code == 204:
             return

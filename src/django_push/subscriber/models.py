@@ -83,7 +83,6 @@ class SubscriptionManager(models.Manager):
             raise SubscriptionError('Unsubscription error on %s: %s' % (topic,
                                                                         error))
 
-
     def subscription_request(self, hub, params):
         def get_post_data():
             for key, value in params.items():
@@ -135,7 +134,8 @@ class Subscription(models.Model):
         return self.verify_token
 
     def set_expiration(self, seconds):
-        self.lease_expiration = datetime.datetime.utcnow() + datetime.timedelta(seconds=seconds)
+        self.lease_expiration = (datetime.datetime.utcnow() +
+                                 datetime.timedelta(seconds=seconds))
         self.save()
 
     def has_expired(self):

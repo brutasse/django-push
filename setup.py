@@ -8,7 +8,7 @@ def read(file_name):
 
 setup(
     name='django-push',
-    version='0.3',
+    version='0.4',
     author='Bruno Renié',
     author_email='bruno@renie.fr',
     url='http://github.com/brutasse/django-push',

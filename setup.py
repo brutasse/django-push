@@ -9,7 +9,7 @@ with open('README.rst') as readme:
 
 setup(
     name='django-push',
-    version='0.4',
+    version=__import__('django_push').__version__,
     author='Bruno Renié',
     author_email='bruno@renie.fr',
     url='https://github.com/brutasse/django-push',

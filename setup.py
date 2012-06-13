@@ -3,25 +3,26 @@ import os
 from distutils.core import setup
 from setuptools import find_packages
 
-def read(file_name):
-    return open(os.path.join(os.path.dirname(__file__), file_name)).read()
+
+with open('README.rst') as readme:
+    long_description = readme.read()
 
 setup(
     name='django-push',
     version='0.4',
     author='Bruno Renié',
     author_email='bruno@renie.fr',
-    url='http://github.com/brutasse/django-push',
+    url='https://github.com/brutasse/django-push',
     license='BSD',
     description='PubSubHubbub (PuSH) support for Django',
-    long_description=read('README.rst'),
-    packages=find_packages('src'),
-    package_dir={'': 'src'},
+    long_description=long_description,
+    packages=find_packages(),
+    include_package_data=True,
     install_requires=[
         'feedparser'
     ],
     classifiers = [
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'Environment :: Web Environment',
         'Framework :: Django',
         'Intended Audience :: Developers',
@@ -29,4 +30,5 @@ setup(
         'Programming Language :: Python',
         'Programming Language :: Python :: 2',
     ],
+    zip_safe=False,
 )

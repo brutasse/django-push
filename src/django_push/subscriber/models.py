@@ -1,8 +1,13 @@
 import base64
-import datetime
 import random
 import urllib
 import urllib2
+
+from datetime import timedelta
+try:
+    from django.utils import timezone
+except ImportError:
+    from datetime import datetime as timezone
 
 from django.conf import settings
 from django.contrib.sites.models import Site
@@ -134,13 +139,12 @@ class Subscription(models.Model):
         return self.verify_token
 
     def set_expiration(self, seconds):
-        self.lease_expiration = (datetime.datetime.utcnow() +
-                                 datetime.timedelta(seconds=seconds))
+        self.lease_expiration = timezone.now() + timedelta(seconds=seconds)
         self.save()
 
     def has_expired(self):
         if self.lease_expiration:
-            return datetime.datetime.utcnow() > self.lease_expiration
+            return timezone.now() > self.lease_expiration
         return False
 
     @property

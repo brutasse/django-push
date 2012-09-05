@@ -103,7 +103,7 @@ unsubscribe. This is as simple as doing:
 
 .. code-block:: python
 
-    from django_push.subscriber import Subscription
+    from django_push.subscriber.models import Subscription
 
 
     Subscription.objects.unsubscribe('http://example.com/feed')

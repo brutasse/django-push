@@ -30,5 +30,6 @@ setup(
         'Programming Language :: Python',
         'Programming Language :: Python :: 2',
     ],
+    test_suite='runtests.runtests',
     zip_safe=False,
 )

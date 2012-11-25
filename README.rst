@@ -23,5 +23,4 @@ Contributing
 
   Then run the tests::
 
-      cd src/django_push
-      python manage.py test
+      python setup.py test

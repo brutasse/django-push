@@ -1,6 +1,10 @@
 Django-PuSH
 ===========
 
+.. image:: https://secure.travis-ci.org/brutasse/django-push.png
+   :alt: Build Status
+   :target: https://secure.travis-ci.org/brutasse/django-push
+
 PubSubHubbub support for Django
 
 Usage

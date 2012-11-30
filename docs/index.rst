@@ -1,42 +1,40 @@
-.. django-push documentation master file, created by
-   sphinx-quickstart on Sun Jul  4 14:18:51 2010.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 Django-PuSH
 ===========
 
 PuSH is the other name of `PubSubHubbub`_, a publish/subscribe protocol based
-on Atom and HTTP and allowing near-instant notifications of feed updates.
+on HTTP and allowing near-instant notifications of topic updates.
 
-* Publishers are entities that publish their updates via Atom feeds. When a
-  feed is updated with a new entry, they ping their *hub* saying they have
-  some new content. The hub is also declared in the Atom feed.
+* Publishers are entities that publish their updates via HTTP resources. When a
+  resource is updated with a new entry, they ping their *hub* saying they have
+  some new content. The hub is also declared in the resource.
 
-* Subscribers are feed readers or aggregators. When they fetch a feed, they
-  notice a hub is declared and subscribe to the feed's update with the hub.
+* Subscribers are feed readers or followers. When they fetch a resource, they
+  notice a hub is declared and subscribe to the resource's updates with the
+  hub.
 
-* Hubs fetch the published feed when it gets a ping from the publisher and
+* Hubs fetch the published resource when it gets a ping from the publisher and
   takes care of notifying all the subscribers.
 
 .. _PubSubHubbub: http://code.google.com/p/pubsubhubbub/
 
 This library provides hooks to add PubSubHubbub support to your Django
-project: you can use it to be a publisher, a subscriber, a hub or all three
-(actually, the hub isn't implemented yet but I'm sure you can help).
+project: you can use it to be a publisher, a subscriber, a hub or all three.
 
-.. warning:: Django 1.2 and greater only!
+The PubSubHubbub spec was initially designed for Atom feeds. The `0.3
+version`_ of the spec defines resources as feeds. The `0.4`_ version allows
+arbitrary content types. This app currently implements the spec in version 0.3
+but support for 0.4 may be added in future releases.
 
-    **Django-PuSH** uses the new syndication framework introduced in Django
-    1.2 as well as the ``csrf_exempt`` decorator. This makes it incompatible
-    with older versions of Django.
+.. _0.3: http://pubsubhubbub.googlecode.com/svn/trunk/pubsubhubbub-core-0.3.html
+
+.. _0.4: http://superfeedr-misc.s3.amazonaws.com/pubsubhubbub-core-0.4.html
 
 Installation
 ------------
 
 .. code-block:: bash
 
-    pip install -U django-push
+    pip install django-push
 
 This should also install ``feedparser`` if you don't have it already.
 

@@ -21,7 +21,6 @@ importing ``django.contrib.syndication.views.Feed``, do it this way:
 
     from django_push.publisher.feeds import Feed
 
-
     class MyFeed(Feed):
         title = 'My Feed'
         link = '...'
@@ -52,17 +51,28 @@ attribute to the URL you want:
 
     from django_push.publisher.feeds import Feed
 
-
     class MyFeed(Feed):
         title = 'My Feed'
         link = '...'
         hub = 'http://hub.example.com'
 
-
     class MyOtherFeed(Feed):
         hub = 'http://some-other-hub.com'
 
 By default, the ``Feed`` class will use the ``PUSH_HUB`` setting.
+
+If you need to compute the hub URL at runtime, override the ``get_hub``
+method on your feed subclass:
+
+.. code-block:: python
+
+    from django_push.publisher.feeds import Feed
+
+    class MyFeed(Feed):
+        def get_hub(self, obj):
+            return some_dynamic_url
+
+The ``get_hub`` method was added in django-push 0.5.
 
 Ping the hub on feed updates
 ----------------------------
@@ -74,21 +84,20 @@ example, if a model has a ``publish()`` method:
 
 .. code-block:: python
 
-    from django.contrib.sites.models import Site
+    from django.contrib.sites.models import get_current_site
     from django.core.urlresolvers import reverse
     from django.db import models
+    from django.utils import timezone
 
     from django_push.publisher import ping_hub
 
-
     class MyModel(models.Model):
-
         def publish(self):
             self.published = True
-            self.timestamp = datetime.datetime.utcnow()
+            self.timestamp = timezone.now()
             self.save()
 
-            ping_hub('http://%s%s' % (Site.objects.get_current(),
+            ping_hub('http://%s%s' % (get_current_site().domain,
                                       reverse('feed_for_mymodel')))
 
 ``ping_hub`` has to be called with the full URL of the Atom feed as parameter,
@@ -100,7 +109,6 @@ argument:
 .. code-block:: python
 
     from django_push.publisher import ping_hub
-
 
     ping_hub('http://example.com/feed.atom',
              hub_url='http://hub.example.com')

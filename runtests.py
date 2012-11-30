@@ -30,6 +30,7 @@ def setup_test_environment():
         'INSTALLED_APPS': apps,
         'STATIC_URL': '/static/',
         'SECRET_KEY': 'test secret key',
+        'ROOT_URLCONF': '',
     }
 
     settings.configure(**settings_dict)

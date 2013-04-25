@@ -32,11 +32,12 @@ class SubscriptionManager(models.Manager):
         if hub is None:
             hub = get_hub(topic)
 
-        subscription, created = self.get_or_create(hub=hub, topic=topic)
-
-        if not created:
+        try:
+            subscription = self.get(hub=hub, topic=topic)
             if subscription.verified and not subscription.has_expired():
                 return subscription
+        except self.model.DoesNotExist:
+            subscription = self.model(hub=hub, topic=topic).save(force_insert=True)
 
         if subscription.secret:
             secret = subscription.secret

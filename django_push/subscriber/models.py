@@ -37,7 +37,8 @@ class SubscriptionManager(models.Manager):
             if subscription.verified and not subscription.has_expired():
                 return subscription
         except self.model.DoesNotExist:
-            subscription = Subscription(hub=hub, topic=topic).save(force_insert=True)
+            subscription = self.model(hub=hub, topic=topic)
+            subscription.save(force_insert=True)
 
         if subscription.secret:
             secret = subscription.secret

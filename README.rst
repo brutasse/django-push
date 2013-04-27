@@ -10,7 +10,9 @@ PubSubHubbub support for Django
 Usage
 -----
 
-The documentation is at http://packages.python.org/django-push
+The documentation is `available on ReadTheDocs`_.
+
+.. _available on ReadTheDocs: https://django-push.readthedocs.org/
 
 Contributing
 ------------

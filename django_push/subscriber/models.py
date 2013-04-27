@@ -24,48 +24,24 @@ class SubscriptionError(Exception):
 
 
 class SubscriptionManager(models.Manager):
+    """
+    'create_subscription' method only creates an intance of Subscription but
+    does not send the request to the server. To initialte request you have to
+    make sure that the instance has been commited to the database before you
+    do that. In a Django view, that means you have to call transaction commit
+    manually before calling subscription.send_request('subscribe')
+    """
 
-    def subscribe(self, topic, hub=None, lease_seconds=None):
-        if lease_seconds is None:
-            lease_seconds = getattr(settings, 'PUSH_LEASE_SECONDS', None)
+    def get_or_create_subscription(self, topic, hub=None):
+        chars = 'abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)'
 
         if hub is None:
             hub = get_hub(topic)
 
-        subscription, created = self.get_or_create(hub=hub, topic=topic)
-
-        if not created:
-            if subscription.verified and not subscription.has_expired():
-                return subscription
-
-        if subscription.secret:
-            secret = subscription.secret
-        else:
-            chars = 'abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)'
-            secret = ''.join([random.choice(chars) for i in range(50)])
-
-        params = {
-            'mode': 'subscribe',
-            'callback': subscription.callback_url,
-            'topic': topic,
-            'verify': ('async', 'sync'),
-            'verify_token': subscription.generate_token('subscribe'),
-            'secret': secret,
-        }
-        if lease_seconds is not None:
-            params['lease_seconds'] = lease_seconds
-            # If not present, the lease duration is decided by the hub
-        response = self.subscription_request(hub, params)
-
-        status = response.code
-        if status in (202, 204):  # 202: deferred verification
-            subscription.verified = True
-        else:
-            error = response.read()
-            raise SubscriptionError('Subscription error on %s: %s' % (topic,
-                                                                      error))
-        subscription.secret = secret
-        subscription.save()
+        subscription, created = self.get_or_create(hub=hub,
+                                                   topic=topic,
+                                                   defaults={'secret': ''.join([random.choice(chars) for i in range(50)]),
+                                                             })
         return subscription
 
     def unsubscribe(self, topic, hub=None):
@@ -74,48 +50,7 @@ class SubscriptionManager(models.Manager):
 
         subscription = Subscription.objects.get(topic=topic, hub=hub)
 
-        params = {
-            'mode': 'unsubscribe',
-            'callback': subscription.callback_url,
-            'topic': topic,
-            'verify': ('async', 'sync'),
-            'verify_token': subscription.generate_token('unsubscribe'),
-        }
-        response = self.subscription_request(hub, params)
-
-        if not response.code in (202, 204):
-            error = response.read()
-            raise SubscriptionError('Unsubscription error on %s: %s' % (topic,
-                                                                        error))
-
-    def subscription_request(self, hub, params):
-        def get_post_data():
-            for key, value in params.items():
-                key = 'hub.%s' % key
-                if isinstance(value, (basestring, int)):
-                    yield key, str(value)
-                else:
-                    for subvalue in value:
-                        yield key, str(subvalue)
-        data = urllib.urlencode(list(get_post_data()))
-        try:
-            headers = {}
-            credentials = get_hub_credentials(hub)
-            if credentials is not None:
-                username, password = credentials
-                encoded = base64.encodestring(
-                    "%s:%s" % (username, password))[:-1]
-                headers['Authorization'] = "Basic %s" % encoded
-            request = urllib2.Request(hub, data, headers)
-            response = urllib2.urlopen(request)
-            return response
-        except urllib2.HTTPError, e:
-            if e.code in (202, 204):
-                return e
-            #else
-            # FIXME re-raising may throw a 500 error on notifications
-            #    raise
-            return e
+        subscription.send_request(mode='unsubscribe')
 
 
 class Subscription(models.Model):
@@ -153,3 +88,56 @@ class Subscription(models.Model):
         use_ssl = getattr(settings, 'PUSH_SSL_CALLBACK', False)
         scheme = use_ssl and 'https' or 'http'
         return '%s://%s%s' % (scheme, Site.objects.get_current(), callback_url)
+
+    def send_request(self, mode):
+        if self.verified and not self.has_expired():
+            return
+
+        params = {
+            'mode': mode,
+            'callback': self.callback_url,
+            'topic': self.topic,
+            'verify': ('async', 'sync'),
+            'verify_token': self.generate_token(mode),
+            'secret': self.secret,
+            'lease_seconds': getattr(settings, 'PUSH_LEASE_SECONDS')
+        }
+
+        def _get_post_data():
+            for key, value in params.items():
+                key = 'hub.%s' % key
+                if isinstance(value, (basestring, int)):
+                    yield key, str(value)
+                else:
+                    for subvalue in value:
+                        yield key, str(subvalue)
+
+        data = urllib.urlencode(list(_get_post_data()))
+
+        try:
+            headers = {}
+            credentials = get_hub_credentials(self.hub)
+            if credentials is not None:
+                username, password = credentials
+                encoded = base64.encodestring(
+                    "%s:%s" % (username, password))[:-1]
+                headers['Authorization'] = "Basic %s" % encoded
+            request = urllib2.Request(self.hub, data, headers)
+            response = urllib2.urlopen(request)
+
+        except urllib2.HTTPError, e:
+            if e.code in (202, 204):
+                return e
+            #else
+            # FIXME re-raising may throw a 500 error on notifications
+            #    raise
+            return e
+
+        status = response.code
+        if status in (202, 204):  # 202: deferred verification
+            self.verified = True
+        else:
+            error = response.read()
+            raise SubscriptionError('Subscription error on %s: %s' % (self.topic,
+                                                                      error))
+        self.save()

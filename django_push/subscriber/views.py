@@ -29,7 +29,7 @@ def callback(request, pk):
                 all((
                     verify_token is not None,
                     subscription.verify_token != verify_token,
-                )),
+                    )),
                 topic != subscription.topic,
             ))
             if invalid_subscription:
@@ -48,11 +48,7 @@ def callback(request, pk):
 
     elif request.method == 'POST':
         signature = request.META.get('HTTP_X_HUB_SIGNATURE', None)
-        if subscription.secret:
-            if signature is None:
-                # Acknowledging receipt but ignoring the message
-                return HttpResponse('')
-
+        if subscription.secret and signature:
             hasher = hmac.new(str(subscription.secret),
                               request.raw_post_data,
                               hashlib.sha1)

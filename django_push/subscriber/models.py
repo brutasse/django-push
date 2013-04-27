@@ -1,5 +1,4 @@
 import base64
-import random
 import urllib
 import urllib2
 
@@ -17,6 +16,7 @@ from django.utils.hashcompat import sha_constructor
 from django.utils.translation import ugettext_lazy as _
 
 from django_push.subscriber.utils import get_hub, get_hub_credentials
+from django_push.utils import generate_random_string
 
 
 class SubscriptionError(Exception):
@@ -24,31 +24,33 @@ class SubscriptionError(Exception):
 
 
 class SubscriptionManager(models.Manager):
-    """
-    'create_subscription' method only creates an intance of Subscription but
-    does not send the request to the server. To initialte request you have to
-    make sure that the instance has been commited to the database before you
-    do that. In a Django view, that means you have to call transaction commit
-    manually before calling subscription.send_request('subscribe')
-    """
 
-    def get_or_create_subscription(self, topic, hub=None):
-        chars = 'abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)'
-
+    def subscribe(self, topic, hub=None):
         if hub is None:
             hub = get_hub(topic)
 
-        subscription, created = self.get_or_create(hub=hub,
-                                                   topic=topic,
-                                                   defaults={'secret': ''.join([random.choice(chars) for i in range(50)]),
-                                                             })
+        subscription, created = self.get_or_create(
+            hub=hub,
+            topic=topic,
+            defaults={'secret': generate_random_string(),
+                      }
+        )
+
+        if (not created and subscription.verified
+                and not subscription.has_expired()):
+            return subscription
+
+        subscription.send_request(mode='subscribe')
         return subscription
 
     def unsubscribe(self, topic, hub=None):
         if hub is None:
             hub = get_hub(topic)
 
-        subscription = Subscription.objects.get(topic=topic, hub=hub)
+        try:
+            subscription = Subscription.objects.get(topic=topic, hub=hub)
+        except self.model.DoesNotExist:
+            return
 
         subscription.send_request(mode='unsubscribe')
 
@@ -90,9 +92,6 @@ class Subscription(models.Model):
         return '%s://%s%s' % (scheme, Site.objects.get_current(), callback_url)
 
     def send_request(self, mode):
-        if self.verified and not self.has_expired():
-            return
-
         params = {
             'mode': mode,
             'callback': self.callback_url,
@@ -100,7 +99,8 @@ class Subscription(models.Model):
             'verify': ('async', 'sync'),
             'verify_token': self.generate_token(mode),
             'secret': self.secret,
-            'lease_seconds': getattr(settings, 'PUSH_LEASE_SECONDS')
+            'lease_seconds': getattr(settings, 'PUSH_LEASE_SECONDS',
+                                     60 * 60 * 24 * 30)  # defaults to 30 days
         }
 
         def _get_post_data():

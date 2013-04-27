@@ -1,7 +1,14 @@
 import feedparser
+import random
 
 from django.conf import settings
 from django.utils.importlib import import_module
+
+
+def generate_random_string():
+    chars = 'abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)'
+
+    return ''.join([random.choice(chars) for i in range(50)])
 
 
 def get_hub(topic):

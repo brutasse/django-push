@@ -1,5 +1,4 @@
 from django_push.publisher.feeds import Feed
-from django.core.urlresolvers import reverse_lazy
 
 
 class HubFeed(Feed):

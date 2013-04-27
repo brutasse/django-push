@@ -99,7 +99,8 @@ class Subscription(models.Model):
             'verify': ('async', 'sync'),
             'verify_token': self.generate_token(mode),
             'secret': self.secret,
-            'lease_seconds': getattr(settings, 'PUSH_LEASE_SECONDS')
+            'lease_seconds': getattr(settings, 'PUSH_LEASE_SECONDS',
+                                     60 * 60 * 24 * 30)  # defaults to 30 days
         }
 
         def _get_post_data():

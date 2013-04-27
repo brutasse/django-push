@@ -15,8 +15,8 @@ from django.db import models
 from django.utils.hashcompat import sha_constructor
 from django.utils.translation import ugettext_lazy as _
 
-from .subscriber.utils import get_hub, get_hub_credentials
-from .utils import generate_random_string
+from django_push.subscriber.utils import get_hub, get_hub_credentials
+from django_push.utils import generate_random_string
 
 
 class SubscriptionError(Exception):
@@ -36,7 +36,7 @@ class SubscriptionManager(models.Manager):
                       }
         )
 
-        if not (created and subscription.verified
+        if (not created and subscription.verified
                 and not subscription.has_expired()):
             return subscription
 

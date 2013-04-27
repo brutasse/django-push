@@ -1,9 +1,9 @@
 Django-PuSH
 ===========
 
-.. image:: https://secure.travis-ci.org/brutasse/django-push.png
+.. image:: https://travis-ci.org/brutasse/django-push.png?branch=master
    :alt: Build Status
-   :target: https://secure.travis-ci.org/brutasse/django-push
+   :target: https://travis-ci.org/brutasse/django-push
 
 PubSubHubbub support for Django
 

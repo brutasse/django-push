@@ -1,6 +1,6 @@
 from django.conf.urls.defaults import *
+from django_push.subscriber.views import PubSubCallback
 
-
-urlpatterns = patterns('django_push.subscriber.views',
-    url(r'^(?P<pk>\d+)/$', 'callback', name='subscriber_callback'),
+urlpatterns = patterns('',
+        url(regex=r'^(?P<pk>\d+)/$', view=PubSubCallback.as_view(), name='subscriber_callback'),
 )

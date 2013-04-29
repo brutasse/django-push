@@ -25,7 +25,8 @@ class SubscriptionError(Exception):
 
 class SubscriptionManager(models.Manager):
 
-    def subscribe(self, topic, hub=None):
+    def subscribe(self, topic, hub=None,
+                  callback_url_name='subscriber_callback'):
         if hub is None:
             hub = get_hub(topic)
 
@@ -40,7 +41,8 @@ class SubscriptionManager(models.Manager):
                 and not subscription.has_expired()):
             return subscription
 
-        subscription.send_request(mode='subscribe')
+        subscription.send_request(mode='subscribe',
+                                  callback_url_name=callback_url_name)
         return subscription
 
     def unsubscribe(self, topic, hub=None):
@@ -85,16 +87,16 @@ class Subscription(models.Model):
         return False
 
     @property
-    def callback_url(self):
-        callback_url = reverse('subscriber_callback', args=[self.id])
+    def callback_url(self, callback_url_name):
+        callback_url = reverse(callback_url_name, args=[self.id])
         use_ssl = getattr(settings, 'PUSH_SSL_CALLBACK', False)
         scheme = use_ssl and 'https' or 'http'
         return '%s://%s%s' % (scheme, Site.objects.get_current(), callback_url)
 
-    def send_request(self, mode):
+    def send_request(self, mode, callback_url_name):
         params = {
             'mode': mode,
-            'callback': self.callback_url,
+            'callback': self.callback_url(callback_url_name),
             'topic': self.topic,
             'verify': ('async', 'sync'),
             'verify_token': self.generate_token(mode),

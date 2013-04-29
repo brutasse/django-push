@@ -9,6 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.generic.base import View
 
 from django_push.subscriber.models import Subscription
+from django_push.subscriber.signals import updated
 
 
 class PubSubCallback(View):
@@ -96,6 +97,7 @@ class PubSubCallback(View):
         """
         Override this in the subclass view to handle the updated feed.
         """
+        updated.send(sender=subscription, notification=feed)
         return HttpResponse(status=200)
 
     def subscription_updated(self, subscription, feed):

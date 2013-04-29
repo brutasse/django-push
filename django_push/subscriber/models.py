@@ -38,10 +38,10 @@ class SubscriptionManager(models.Manager):
 
         if (not created and subscription.verified
                 and not subscription.has_expired()):
-            return subscription, created
+            return subscription
 
         subscription.send_request(mode='subscribe', **kwargs)
-        return subscription, created
+        return subscription
 
     def unsubscribe(self, topic, hub=None, **kwargs):
         if hub is None:

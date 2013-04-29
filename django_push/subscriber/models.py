@@ -26,7 +26,8 @@ class SubscriptionError(Exception):
 class SubscriptionManager(models.Manager):
 
     def subscribe(self, topic, hub=None,
-                  callback_url_name='subscriber_callback'):
+                  callback_url_name='subscriber_callback',
+                  extra_request_params={}):
         if hub is None:
             hub = get_hub(topic)
 
@@ -42,7 +43,8 @@ class SubscriptionManager(models.Manager):
             return subscription
 
         subscription.send_request(mode='subscribe',
-                                  callback_url_name=callback_url_name)
+                                  callback_url_name=callback_url_name,
+                                  extra_request_params=extra_request_params)
         return subscription
 
     def unsubscribe(self, topic, hub=None):
@@ -86,14 +88,14 @@ class Subscription(models.Model):
             return timezone.now() > self.lease_expiration
         return False
 
-    @property
     def callback_url(self, callback_url_name):
         callback_url = reverse(callback_url_name, args=[self.id])
         use_ssl = getattr(settings, 'PUSH_SSL_CALLBACK', False)
         scheme = use_ssl and 'https' or 'http'
         return '%s://%s%s' % (scheme, Site.objects.get_current(), callback_url)
 
-    def send_request(self, mode, callback_url_name):
+    def send_request(self, mode,
+                     callback_url_name, extra_request_params):
         params = {
             'mode': mode,
             'callback': self.callback_url(callback_url_name),
@@ -104,6 +106,8 @@ class Subscription(models.Model):
             'lease_seconds': getattr(settings, 'PUSH_LEASE_SECONDS',
                                      60 * 60 * 24 * 30)  # defaults to 30 days
         }
+        if extra_request_params:
+            params.update(extra_request_params)
 
         def _get_post_data():
             for key, value in params.items():

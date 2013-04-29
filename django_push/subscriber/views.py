@@ -42,13 +42,21 @@ class PubSubCallback(View):
                 if lease_seconds is not None:
                     subscription.set_expiration(int(lease_seconds))
                 subscription.save()
+                return self.subscribed(subscription)
 
             if mode == self.MODE_UNSUBSCRIBE:
-                subscription.delete()
+                return self.unsubscribe(subscription)
 
             return HttpResponse(challenge)
 
         raise Http404
+
+    def subscribed(subscription, challenge):
+        return HttpResponse(challenge)
+
+    def unsubscribe(subscription, challenge):
+        subscription.delete()
+        return HttpResponse(challenge)
 
     def post(self, request, pk, *args, **kwargs):
         subscription = get_object_or_404(Subscription, pk=pk)

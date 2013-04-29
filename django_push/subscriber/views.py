@@ -87,7 +87,7 @@ class PubSubCallback(View):
             ))
 
             if needs_update:
-                return self.subscription_updated(subscription, parsed)
+                self.subscription_updated(subscription, parsed)
 
             return self.feed_update(subscription, parsed)
 
@@ -102,6 +102,7 @@ class PubSubCallback(View):
 
     def subscription_updated(self, subscription, feed):
         """
+        Abstract method to be overridden in the subclass
         Override this in the subclass view to handle the changed subscription.
         """
-        return HttpResponse(status=200)
+        pass

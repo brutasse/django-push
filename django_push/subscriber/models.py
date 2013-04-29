@@ -16,7 +16,7 @@ from django.utils.hashcompat import sha_constructor
 from django.utils.translation import ugettext_lazy as _
 
 from django_push.subscriber.utils import get_hub, get_hub_credentials
-from django_push.utils import generate_random_string
+from django_push.subscriber.utils import generate_random_string
 
 
 class SubscriptionError(Exception):
@@ -25,7 +25,7 @@ class SubscriptionError(Exception):
 
 class SubscriptionManager(models.Manager):
 
-    def subscribe(self, topic, hub=None):
+    def subscribe(self, topic, hub=None, **kwargs):
         if hub is None:
             hub = get_hub(topic)
 
@@ -40,10 +40,10 @@ class SubscriptionManager(models.Manager):
                 and not subscription.has_expired()):
             return subscription
 
-        subscription.send_request(mode='subscribe')
+        subscription.send_request(mode='subscribe', **kwargs)
         return subscription
 
-    def unsubscribe(self, topic, hub=None):
+    def unsubscribe(self, topic, hub=None, **kwargs):
         if hub is None:
             hub = get_hub(topic)
 
@@ -52,7 +52,7 @@ class SubscriptionManager(models.Manager):
         except self.model.DoesNotExist:
             return
 
-        subscription.send_request(mode='unsubscribe')
+        subscription.send_request(mode='unsubscribe', **kwargs)
 
 
 class Subscription(models.Model):
@@ -84,17 +84,18 @@ class Subscription(models.Model):
             return timezone.now() > self.lease_expiration
         return False
 
-    @property
-    def callback_url(self):
-        callback_url = reverse('subscriber_callback', args=[self.id])
+    def callback_url(self, callback_url_name):
+        callback_url = reverse(callback_url_name, args=[self.id])
         use_ssl = getattr(settings, 'PUSH_SSL_CALLBACK', False)
         scheme = use_ssl and 'https' or 'http'
         return '%s://%s%s' % (scheme, Site.objects.get_current(), callback_url)
 
-    def send_request(self, mode):
+    def send_request(self, mode, **kwargs):
+        callback_url = kwargs.get('callback_url_name') or 'subscriber_callback'
+
         params = {
             'mode': mode,
-            'callback': self.callback_url,
+            'callback': self.callback_url(callback_url),
             'topic': self.topic,
             'verify': ('async', 'sync'),
             'verify_token': self.generate_token(mode),
@@ -102,6 +103,10 @@ class Subscription(models.Model):
             'lease_seconds': getattr(settings, 'PUSH_LEASE_SECONDS',
                                      60 * 60 * 24 * 30)  # defaults to 30 days
         }
+        if 'extra_request_params' in kwargs:
+            extra_params = kwargs['extra_request_params']
+            if isinstance(extra_params, dict):
+                params.update(extra_params)
 
         def _get_post_data():
             for key, value in params.items():

@@ -4,59 +4,72 @@ import hmac
 
 from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404
+from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+from django.views.generic.base import View
 
-from django_push.subscriber.models import Subscription, SubscriptionError
+from django_push.subscriber.models import Subscription
 from django_push.subscriber.signals import updated
 
 
-@csrf_exempt
-def callback(request, pk):
-    subscription = get_object_or_404(Subscription, pk=pk)
+class PubSubCallback(View):
+    MODE_SUBSCRIBE = 'subscribe'
+    MODE_UNSUBSCRIBE = 'unsubscribe'
 
-    if request.method == 'GET':
-        mode = request.GET['hub.mode']
-        topic = request.GET['hub.topic']
-        challenge = request.GET['hub.challenge']
-        lease_seconds = request.GET.get('hub.lease_seconds', None)
-        verify_token = request.GET.get('hub.verify_token', None)
+    @method_decorator(csrf_exempt)
+    def dispatch(self, *args, **kwargs):
+        return super(PubSubCallback, self).dispatch(*args, **kwargs)
 
-        if mode == 'subscribe':
-            if not verify_token.startswith(mode):
-                raise Http404
+    def get(self, request, pk, *args, **kwargs):
+        try:
+            subscription = Subscription.objects.get(pk=pk)
+            mode = request.GET['hub.mode']
+            topic = request.GET['hub.topic']
+            challenge = request.GET['hub.challenge']
+            verify_token = request.GET['hub.verify_token']
+            lease_seconds = request.GET.get('hub.lease_seconds', None)
+        except (Subscription.DoesNotExist, KeyError):
+            raise Http404
 
-            invalid_subscription = any((
-                all((
-                    verify_token is not None,
-                    subscription.verify_token != verify_token,
-                    )),
-                topic != subscription.topic,
-            ))
-            if invalid_subscription:
-                raise Http404
+        valid_request = all((
+            verify_token.startswith(mode),
+            verify_token == subscription.verify_token,
+            topic == subscription.topic
+        ))
 
-            subscription.verified = True
-            if lease_seconds is not None:
-                subscription.set_expiration(int(lease_seconds))
+        if valid_request:
+            if mode == self.MODE_SUBSCRIBE:
+                subscription.verified = True
+                if lease_seconds is not None:
+                    subscription.set_expiration(int(lease_seconds))
+                subscription.save()
+                self.post_subscribed(subscription)
 
-            subscription.save()
+            if mode == self.MODE_UNSUBSCRIBE:
+                self.post_unsubscribed(subscription)
+
             return HttpResponse(challenge)
 
-        if mode == 'unsubscribe':
-            subscription.delete()
-            return HttpResponse(challenge)
+        raise Http404
 
-    elif request.method == 'POST':
+    def post_subscribed(self, subscription):
+        pass
+
+    def post_unsubscribed(self, subscription):
+        subscription.delete()
+
+    def post(self, request, pk, *args, **kwargs):
+        subscription = get_object_or_404(Subscription, pk=pk)
         signature = request.META.get('HTTP_X_HUB_SIGNATURE', None)
-        if subscription.secret and signature:
+        if subscription.secret:
             hasher = hmac.new(str(subscription.secret),
                               request.raw_post_data,
                               hashlib.sha1)
             digest = 'sha1=%s' % hasher.hexdigest()
             if signature != digest:
-                return HttpResponse('')
+                return HttpResponse(status=400)
 
-        parsed = feedparser.parse(request.raw_post_data)
+        parsed = feedparser.parse(request.body)
         links = getattr(parsed.feed, 'links', None)
         if links:
             hub_url = subscription.hub
@@ -73,12 +86,21 @@ def callback(request, pk):
             ))
 
             if needs_update:
-                try:
-                    Subscription.objects.subscribe(topic_url, hub=hub_url)
-                except SubscriptionError:
-                    pass
+                self.subscription_updated(subscription, parsed)
 
-            updated.send(sender=subscription, notification=parsed)
-            return HttpResponse('')
+            self.feed_update(subscription, parsed)
 
         return HttpResponse()
+
+    def feed_update(self, subscription, feed):
+        """
+        Override this in the subclass view to handle the updated feed.
+        """
+        updated.send(sender=subscription, notification=feed)
+
+    def subscription_updated(self, subscription, feed):
+        """
+        Abstract method to be overridden in the subclass
+        Override this in the subclass view to handle the changed subscription.
+        """
+        pass

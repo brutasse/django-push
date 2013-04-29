@@ -53,7 +53,7 @@ class PubSubCallback(View):
     def post(self, request, pk, *args, **kwargs):
         subscription = get_object_or_404(Subscription, pk=pk)
         signature = request.META.get('HTTP_X_HUB_SIGNATURE', None)
-        if subscription.secret and signature is not None:
+        if subscription.secret:
             hasher = hmac.new(str(subscription.secret),
                               request.raw_post_data,
                               hashlib.sha1)

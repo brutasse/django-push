@@ -91,7 +91,7 @@ class Subscription(models.Model):
         return '%s://%s%s' % (scheme, Site.objects.get_current(), callback_url)
 
     def send_request(self, mode, **kwargs):
-        callback_url = kwargs.get('callback_url_name') or 'subscriber_url'
+        callback_url = kwargs.get('callback_url_name') or 'subscriber_callback'
 
         params = {
             'mode': mode,

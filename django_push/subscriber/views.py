@@ -55,7 +55,7 @@ class PubSubCallback(View):
     def post_subscribed(self, subscription):
         pass
 
-    def post_unsubscribe(self, subscription):
+    def post_unsubscribed(self, subscription):
         subscription.delete()
 
     def post(self, request, pk, *args, **kwargs):

@@ -38,10 +38,13 @@ class PubSubCallback(View):
 
         if valid_request:
             if mode == self.MODE_SUBSCRIBE:
-                return self.subscibe(subscription, lease_seconds)
+                subscription.verified = True
+                if lease_seconds is not None:
+                    subscription.set_expiration(int(lease_seconds))
+                subscription.save()
 
             if mode == self.MODE_UNSUBSCRIBE:
-                return self.unsubscribe(subscription)
+                subscription.delete()
 
             return HttpResponse(challenge)
 
@@ -91,15 +94,4 @@ class PubSubCallback(View):
         """
         Override this in the subclass view to handle the changed subscription.
         """
-        return HttpResponse(status=200)
-
-    def subscribe(self, subscription, lease_seconds):
-        subscription.verified = True
-        if lease_seconds is not None:
-            subscription.set_expiration(int(lease_seconds))
-        subscription.save()
-        return HttpResponse(status=200)
-
-    def unsubscribe(self, subscription):
-        subscription.delete()
         return HttpResponse(status=200)

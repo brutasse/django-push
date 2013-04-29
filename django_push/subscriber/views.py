@@ -43,21 +43,20 @@ class PubSubCallback(View):
                 if lease_seconds is not None:
                     subscription.set_expiration(int(lease_seconds))
                 subscription.save()
-                return self.subscribed(subscription)
+                self.post_subscribed(subscription)
 
             if mode == self.MODE_UNSUBSCRIBE:
-                return self.unsubscribe(subscription)
+                self.post_unsubscribed(subscription)
 
             return HttpResponse(challenge)
 
         raise Http404
 
-    def subscribed(subscription, challenge):
-        return HttpResponse(challenge)
+    def post_subscribed(self, subscription):
+        pass
 
-    def unsubscribe(subscription, challenge):
+    def post_unsubscribe(self, subscription):
         subscription.delete()
-        return HttpResponse(challenge)
 
     def post(self, request, pk, *args, **kwargs):
         subscription = get_object_or_404(Subscription, pk=pk)
@@ -89,7 +88,7 @@ class PubSubCallback(View):
             if needs_update:
                 self.subscription_updated(subscription, parsed)
 
-            return self.feed_update(subscription, parsed)
+            self.feed_update(subscription, parsed)
 
         return HttpResponse()
 
@@ -98,7 +97,6 @@ class PubSubCallback(View):
         Override this in the subclass view to handle the updated feed.
         """
         updated.send(sender=subscription, notification=feed)
-        return HttpResponse(status=200)
 
     def subscription_updated(self, subscription, feed):
         """

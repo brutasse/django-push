@@ -25,9 +25,7 @@ class SubscriptionError(Exception):
 
 class SubscriptionManager(models.Manager):
 
-    def subscribe(self, topic, hub=None,
-                  callback_url_name='subscriber_callback',
-                  extra_request_params={}):
+    def subscribe(self, topic, hub=None, **kwargs):
         if hub is None:
             hub = get_hub(topic)
 
@@ -42,12 +40,10 @@ class SubscriptionManager(models.Manager):
                 and not subscription.has_expired()):
             return subscription
 
-        subscription.send_request(mode='subscribe',
-                                  callback_url_name=callback_url_name,
-                                  extra_request_params=extra_request_params)
+        subscription.send_request(mode='subscribe', **kwargs)
         return subscription
 
-    def unsubscribe(self, topic, hub=None):
+    def unsubscribe(self, topic, hub=None, **kwargs):
         if hub is None:
             hub = get_hub(topic)
 
@@ -56,7 +52,7 @@ class SubscriptionManager(models.Manager):
         except self.model.DoesNotExist:
             return
 
-        subscription.send_request(mode='unsubscribe')
+        subscription.send_request(mode='unsubscribe', **kwargs)
 
 
 class Subscription(models.Model):
@@ -94,11 +90,12 @@ class Subscription(models.Model):
         scheme = use_ssl and 'https' or 'http'
         return '%s://%s%s' % (scheme, Site.objects.get_current(), callback_url)
 
-    def send_request(self, mode,
-                     callback_url_name, extra_request_params):
+    def send_request(self, mode, **kwargs):
+        callback_url = kwargs.get('callback_url_name') or 'subscriber_url'
+
         params = {
             'mode': mode,
-            'callback': self.callback_url(callback_url_name),
+            'callback': self.callback_url(callback_url),
             'topic': self.topic,
             'verify': ('async', 'sync'),
             'verify_token': self.generate_token(mode),
@@ -106,8 +103,10 @@ class Subscription(models.Model):
             'lease_seconds': getattr(settings, 'PUSH_LEASE_SECONDS',
                                      60 * 60 * 24 * 30)  # defaults to 30 days
         }
-        if extra_request_params:
-            params.update(extra_request_params)
+        if 'extra_request_params' in kwargs:
+            extra_params = kwargs['extra_request_params']
+            if isinstance(extra_params, dict):
+                params.update(extra_params)
 
         def _get_post_data():
             for key, value in params.items():

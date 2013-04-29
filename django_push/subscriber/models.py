@@ -16,7 +16,7 @@ from django.utils.hashcompat import sha_constructor
 from django.utils.translation import ugettext_lazy as _
 
 from django_push.subscriber.utils import get_hub, get_hub_credentials
-from django_push.utils import generate_random_string
+from django_push.subscriber.utils import generate_random_string
 
 
 class SubscriptionError(Exception):

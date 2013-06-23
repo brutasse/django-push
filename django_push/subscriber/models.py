@@ -135,8 +135,8 @@ class Subscription(models.Model):
             return response
 
         raise SubscriptionError(
-            "Error while subscribing to topic {0} via hub {1}: {2}".format(
-                self.topic, self.hub, response.text),
+            "Error during request to hub {0} for topic {1}: {2}".format(
+                self.hub, self.topic, response.text),
             self,
             response,
         )

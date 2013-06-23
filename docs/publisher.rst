@@ -4,9 +4,9 @@ Being a publisher
 Declare your hub
 ----------------
 
-First, you need a hub. You can either use your own (see :ref:`hub`) or use a
-`public hub`_. See the hub's documentation for adding a new feed and add your
-hub's URL as a ``PUSH_HUB`` setting (the URL **must** be a full URL):
+First, you need a hub. You can either use your own or use a `public hub`_.
+See the hub's documentation for adding a new feed and add your hub's URL as
+a ``PUSH_HUB`` setting (the URL **must** be a full URL):
 
 .. _public hub: https://pubsubhubbub.appspot.com
 

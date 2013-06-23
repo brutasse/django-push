@@ -2,7 +2,7 @@ Being a subscriber
 ==================
 
 * Add ``django_push.subscriber`` to your ``INSTALLED_APPS`` and
-  run ``manage.py syncdb && manage.py migrate``
+  run ``manage.py syncdb``. If you use South, run ``manage.py migrate``.
 
 * Include ``django_push.subscriber.urls`` in your main urlconf:
 
@@ -13,7 +13,15 @@ Being a subscriber
           url(r'^subscriber/', include('django_push.subscriber.urls')),
       )
 
-* Make sure the Sites framework is correctly configured.
+* If you have ``django.contrib.sites`` installed, make sure it is correctly
+  configured: check that ``Site.objects.get_current()`` actually returns the
+  domain of your publicly accessible website.
+
+* If you don't use ``django.contrib.sites``, set ``PUSH_DOMAIN`` to your
+  site's domain in your settings.
+
+* Additionally if your site is available via HTTPS, set ``PUSH_SSL_CALLBACK``
+  to ``True``.
 
 Initial subscription
 --------------------
@@ -56,7 +64,7 @@ Now that you found a hub, you can create a subscription:
 If a subscription for this feed already exists, no new subscription is
 created but the existing subscription is renewed.
 
-``lease_seconds`` is optional and only a hint for the hub. If the hub has
+``lease_seconds`` is optional and **only a hint** for the hub. If the hub has
 a custom expiration policy it may chose another value arbitrarily. The value
 chose by the hub is saved in the subscription object when the subscription
 gets verified.
@@ -107,7 +115,7 @@ unsubscribe. This is as simple as doing:
     subscription.unsubscribe()
 
 The hub is notified to cancel the subscription and the Subscription object is
-deleted. You can also specify the hub if you want to:
+deleted. You can also specify the hub if a topic uses several hubs:
 
 .. code-block:: python
 

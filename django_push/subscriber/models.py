@@ -84,6 +84,7 @@ class Subscription(models.Model):
         if self.lease_expiration:
             return timezone.now() > self.lease_expiration
         return False
+    has_expired.boolean = True
 
     def truncated_topic(self):
         if len(self.topic) > 50:

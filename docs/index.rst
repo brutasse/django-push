@@ -82,7 +82,10 @@ Changelog
     ``PUSH_DOMAIN`` in your settings to your site's canonical hostnamen
 
   * South migrations support. If you don't use South, you should. Just **fake
-    the first migration** and apply the others to upgrade an existing site.
+    the first migration** and apply the others to upgrade an existing site::
+
+        ./manage.py migrate subscriber 0001_initial --fake
+        ./manage.py migrate
 
 * **0.3** (2010-08-18):
 

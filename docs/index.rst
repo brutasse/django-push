@@ -46,7 +46,6 @@ Manual
 
    publisher
    subscriber
-   hub
 
 Changelog
 ---------

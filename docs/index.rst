@@ -18,12 +18,13 @@ on HTTP and allowing near-instant notifications of topic updates.
 .. _PubSubHubbub: http://code.google.com/p/pubsubhubbub/
 
 This library provides hooks to add PubSubHubbub support to your Django
-project: you can use it to be a publisher, a subscriber, a hub or all three.
+project: you can use it to be a publisher and/or subscriber.
 
 The PubSubHubbub spec was initially designed for Atom feeds. The `0.3
 version`_ of the spec defines resources as feeds. The `0.4`_ version allows
-arbitrary content types. This app currently implements the spec in version 0.3
-but support for 0.4 may be added in future releases.
+arbitrary content types. The `0.4`_ spec is supported since version **0.5** of
+django-push. We unfortunately missed the chance of having version numbers
+match properly.
 
 .. _0.3 version: http://pubsubhubbub.googlecode.com/svn/trunk/pubsubhubbub-core-0.3.html
 

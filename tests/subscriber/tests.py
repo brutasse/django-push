@@ -156,6 +156,22 @@ class SubscriberTestCase(TestCase):
             Subscription.objects.subscribe('http://example.com/test',
                                            hub='http://hub.example.com')
 
+    @override_settings(PUSH_CREDENTIALS='tests.subscriber.credentials')
+    @mock.patch('requests.post')
+    def test_hub_credentials(self, post):
+        post.return_value = response(status_code=202)
+        s = Subscription.objects.subscribe('http://example.com/test',
+                                           hub='http://hub.example.com')
+        post.assert_called_once_with(
+            'http://hub.example.com',
+            data={
+                'hub.callback': s.callback_url,
+                'hub.verify': ['sync', 'async'],
+                'hub.topic': 'http://example.com/test',
+                'hub.mode': 'subscribe',
+            },
+            auth=('username', 'password'))
+
     def test_missing_callback_params(self):
         s = Subscription.objects.create(topic='foo', hub='bar')
         url = reverse('subscriber_callback', args=[s.pk])

@@ -1,22 +1,27 @@
-import base64
-import urllib
-import urllib2
+from __future__ import unicode_literals
+
+import logging
+import warnings
 
 from datetime import timedelta
+
 try:
-    from django.utils import timezone
-except ImportError:
-    from datetime import datetime as timezone
+    from urllib.parse import urlparse
+except ImportError:  # python2
+    from urlparse import urlparse
+
+import requests
 
 from django.conf import settings
-from django.contrib.sites.models import Site
 from django.core.urlresolvers import reverse
 from django.db import models
-from django.utils.hashcompat import sha_constructor
+from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
-from django_push.subscriber.utils import (get_hub, get_hub_credentials,
-                                          generate_random_string)
+from .utils import (get_hub, get_hub_credentials, generate_random_string,
+                    get_domain)
+
+logger = logging.getLogger(__name__)
 
 
 class SubscriptionError(Exception):
@@ -24,26 +29,27 @@ class SubscriptionError(Exception):
 
 
 class SubscriptionManager(models.Manager):
-
-    def subscribe(self, topic, hub=None):
+    def subscribe(self, topic, hub=None, lease_seconds=None):
         if hub is None:
+            warnings.warn("Subscribing without providing the hub is "
+                          "deprecated.", DeprecationWarning)
             hub = get_hub(topic)
 
-        subscription, created = self.get_or_create(
-            hub=hub,
-            topic=topic,
-            defaults={'secret': generate_random_string(),
-                      }
-        )
+        # Only use a secret over HTTPS
+        scheme = urlparse(hub).scheme
+        defaults = {}
+        if scheme == 'https':
+            defaults['secret'] = generate_random_string()
 
-        if (not created and subscription.verified
-                and not subscription.has_expired()):
-            return subscription
-
-        subscription.send_request(mode='subscribe')
+        subscription, created = self.get_or_create(hub=hub, topic=topic,
+                                                   defaults=defaults)
+        subscription.subscribe(lease_seconds=lease_seconds)
         return subscription
 
     def unsubscribe(self, topic, hub=None):
+        warnings.warn("The unsubscribe manager method is deprecated and is "
+                      "now available as a method on the subscription instance "
+                      "directly.", DeprecationWarning)
         if hub is None:
             hub = get_hub(topic)
 
@@ -52,32 +58,27 @@ class SubscriptionManager(models.Manager):
         except self.model.DoesNotExist:
             return
 
-        subscription.send_request(mode='unsubscribe')
+        subscription.unsubscribe()
 
 
 class Subscription(models.Model):
     hub = models.URLField(_('Callback'), max_length=1023)
     topic = models.URLField(_('Topic'), max_length=1023)
     verified = models.BooleanField(_('Verified'), default=False)
-    verify_token = models.CharField(_('Verify Token'), max_length=255)
-    lease_expiration = models.DateTimeField(_('Lease expiration'), null=True)
-    secret = models.CharField(_('Secret'), max_length=255, null=True)
+    verify_token = models.CharField(_('Verify Token'), max_length=255,
+                                    blank=True)
+    lease_expiration = models.DateTimeField(_('Lease expiration'),
+                                            null=True, blank=True)
+    secret = models.CharField(_('Secret'), max_length=255,
+                              null=True, blank=True)
 
     objects = SubscriptionManager()
 
     def __unicode__(self):
-        return u'%s: %s' % (self.topic, self.hub)
-
-    def generate_token(self, mode):
-        digest = sha_constructor('%s%i%s' % (settings.SECRET_KEY,
-                                             self.pk, mode)).hexdigest()
-        self.verify_token = mode[:20] + digest
-        self.save()
-        return self.verify_token
+        return '%s: %s' % (self.topic, self.hub)
 
     def set_expiration(self, seconds):
         self.lease_expiration = timezone.now() + timedelta(seconds=seconds)
-        self.save()
 
     def has_expired(self):
         if self.lease_expiration:
@@ -86,58 +87,57 @@ class Subscription(models.Model):
 
     @property
     def callback_url(self):
-        callback_url = reverse('subscriber_callback', args=[self.id])
+        callback_url = reverse('subscriber_callback', args=[self.pk])
         use_ssl = getattr(settings, 'PUSH_SSL_CALLBACK', False)
-        scheme = use_ssl and 'https' or 'http'
-        return '%s://%s%s' % (scheme, Site.objects.get_current(), callback_url)
+        scheme = 'https' if use_ssl else 'http'
+        return '%s://%s%s' % (scheme, get_domain(), callback_url)
 
-    def send_request(self, mode):
+    def subscribe(self, lease_seconds=None):
+        return self.send_request(mode='subscribe', lease_seconds=lease_seconds)
+
+    def unsubscribe(self):
+        return self.send_request(mode='unsubscribe')
+
+    def send_request(self, mode, lease_seconds=None):
         params = {
-            'mode': mode,
-            'callback': self.callback_url,
-            'topic': self.topic,
-            'verify': ('async', 'sync'),
-            'verify_token': self.generate_token(mode),
-            'secret': self.secret,
-            'lease_seconds': getattr(settings, 'PUSH_LEASE_SECONDS',
-                                     60 * 60 * 24 * 30)  # defaults to 30 days
+            'hub.mode': mode,
+            'hub.callback': self.callback_url,
+            'hub.topic': self.topic,
+            'hub.verify': ['sync', 'async'],
         }
 
-        def _get_post_data():
-            for key, value in params.items():
-                key = 'hub.%s' % key
-                if isinstance(value, (basestring, int)):
-                    yield key, str(value)
-                else:
-                    for subvalue in value:
-                        yield key, str(subvalue)
+        if self.secret:
+            params['hub.secret'] = self.secret
 
-        data = urllib.urlencode(list(_get_post_data()))
+        if lease_seconds is None:
+            lease_seconds = getattr(settings, 'PUSH_LEASE_SECONDS', None)
 
-        try:
-            headers = {}
-            credentials = get_hub_credentials(self.hub)
-            if credentials is not None:
-                username, password = credentials
-                encoded = base64.encodestring(
-                    "%s:%s" % (username, password))[:-1]
-                headers['Authorization'] = "Basic %s" % encoded
-            request = urllib2.Request(self.hub, data, headers)
-            response = urllib2.urlopen(request)
+        # If not provided, let the hub decide.
+        if lease_seconds is not None:
+            params['hub.lease_seconds'] = lease_seconds
 
-        except urllib2.HTTPError, e:
-            if e.code in (202, 204):
-                return e
-            #else
-            # FIXME re-raising may throw a 500 error on notifications
-            #    raise
-            return e
+        credentials = get_hub_credentials(self.hub)
+        response = requests.post(self.hub, data=params, auth=credentials)
 
-        status = response.code
-        if status in (202, 204):  # 202: deferred verification
-            self.verified = True
-        else:
-            error = response.read()
-            raise SubscriptionError('Subscription error on %s: %s' % (self.topic,
-                                                                      error))
-        self.save()
+        if response.status_code in (202, 204):
+            if (
+                mode == 'subscribe' and
+                response.status_code == 204  # synchronous verification (0.3)
+            ):
+                self.verified = True
+                Subscription.objects.filter(pk=self.pk).update(verified=True)
+
+            elif response.status_code == 202:
+                if mode == 'unsubscribe':
+                    self.pending_unsubscription = True
+                    # TODO check for making sure unsubscriptions are legit
+                    #Subscription.objects.filter(pk=self.pk).update(
+                    #    pending_unsubscription=True)
+            return response
+
+        raise SubscriptionError(
+            "Error while subscribing to topic {0} via hub {1}: {2}".format(
+                self.topic, self.hub, response.text),
+            self,
+            response,
+        )

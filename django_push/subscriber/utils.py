@@ -1,18 +1,28 @@
-import feedparser
-import random
+import warnings
+
+from functools import partial
+
+import requests
 
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
+from django.utils.crypto import get_random_string
 from django.utils.importlib import import_module
 
 
-def generate_random_string():
-    chars = 'abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)'
-
-    return ''.join([random.choice(chars) for i in range(50)])
+generate_random_string = partial(
+    get_random_string,
+    length=50,
+    allowed_chars='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+                  '0123456789!@#$%^&*(-_=+)')
 
 
 def get_hub(topic):
-    parsed = feedparser.parse(topic)
+    import feedparser
+    warnings.warn("get_hub is deprecated. Use your own utility function "
+                  "instead.", DeprecationWarning)
+    response = requests.get(topic)
+    parsed = feedparser.parse(response.text)
     for link in parsed.feed.links:
         if link['rel'] == 'hub':
             return link['href']
@@ -32,3 +42,15 @@ def get_hub_credentials(hub_url):
     creds_path, creds_function = creds_path.rsplit('.', 1)
     creds_module = import_module(creds_path)
     return getattr(creds_module, creds_function)(hub_url)
+
+
+def get_domain():
+    if hasattr(settings, 'PUSH_DOMAIN'):
+        return settings.PUSH_DOMAIN
+    elif 'django.contrib.sites' in settings.INSTALLED_APPS:
+        from django.contrib.sites.models import Site
+        return Site.objects.get_current().domain
+    raise ImproperlyConfigured(
+        "Unable to deterermine the site's host. Either use "
+        "django.contrib.sites and set SITE_ID in your settings or "
+        "set PUSH_DOMAIN to your site's domain.")

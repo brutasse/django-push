@@ -25,7 +25,7 @@ version`_ of the spec defines resources as feeds. The `0.4`_ version allows
 arbitrary content types. This app currently implements the spec in version 0.3
 but support for 0.4 may be added in future releases.
 
-.. _0.3: http://pubsubhubbub.googlecode.com/svn/trunk/pubsubhubbub-core-0.3.html
+.. _0.3 version: http://pubsubhubbub.googlecode.com/svn/trunk/pubsubhubbub-core-0.3.html
 
 .. _0.4: http://superfeedr-misc.s3.amazonaws.com/pubsubhubbub-core-0.4.html
 
@@ -51,40 +51,44 @@ Manual
 Changelog
 ---------
 
-* 0.3 - 2010-08-18: subscribers can unsubscribe.
-* 0.2 - 2010-08-12: signature handling of content distribution requests.
-* 0.1 - 2010-08-11: initial release.
+* **0.4**:
 
-Upgrading
----------
+  * Python 3 support, Django >= 1.4.1 support.
 
-If you're using ``django_push.subscriber`` 0.1 and you need to upgrade to 0.2
-or higher, here is what you need to do:
+  * HTTP handling via requests instead of urllib2.
 
-* Run the following SQL query to add the ``secret`` column:
+  * Deprecation of ``Subscription.objects.unsubscribe()`` in favor of an
+    instance method on the subscription object. The ``unsubscribe()`` manager
+    method will be removed in version 0.5.
 
-  .. code-block:: sql
+  * ``Subscription.objects.subscribe()`` raises a warning if the ``hub`` kwarg
+    is not provided. It will become mandatory in version 0.5.
 
-    ALTER TABLE subscriber_subscription ADD secret varchar(255);
+  * Removed ``hub.verify_token`` from subscription requests. It's optional in
+    the 0.3 spec and absent from the 0.4 spec.
 
-* If you want your subscriptions to use the `authenticated content
-  distribution`_ mechanism, you need to re-subscribe to all your existing
-  subscriptions.
+  * Secret generation code uses ``django.utils.crypto`` instead of the
+    ``random`` module. In addition, subscriptions over HTTP don't use a secret
+    anymore (as recommended in the spec).
 
-.. _authenticated content distribution: http://pubsubhubbub.googlecode.com/svn/trunk/pubsubhubbub-core-0.3.html#authednotify
+  * The ``updated`` signal is sent with the raw payload instead of the result
+    of a ``feedparser.parse`` call. This allows other content types than feeds
+    to be processed, as suggested in version 0.4 of the PubSubHubbub spec.
 
-Other projects
---------------
+  * The callback view is now a class-based view, allowing listening for content
+    distribution via a custom view if thn ``updated`` signal is not suitable.
 
-* `SubHub`_ is a personal hub for your own feeds, although it's not completely
-  real-time.
+  * ``django.contrib.sites`` is no longer a hard requirement. You can set
+    ``PUSH_DOMAIN`` in your settings to your site's canonical hostnamen
 
-.. _SubHub: https://launchpad.net/subhub
+* **0.3** (2010-08-18):
 
-* `djpubsubhubbub`_ implements the subscriber part of PubSubHubbub.
+  * Subscribers can unsubscribe.
 
-.. _djpubsubhubbub: https://git.participatoryculture.org/djpubsubhubbub/
+* **0.2** (2010-08-12):
 
-* `PubSubHubbub_Publisher`_ is a publisher client for Python.
+  * Signature handling of content distribution requests.
 
-.. _PubSubHubbub_Publisher: http://pypi.python.org/pypi/PubSubHubbub_Publisher/1.0
+* **0.1** (2010-08-11):
+
+  * Initial release.

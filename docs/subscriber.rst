@@ -2,7 +2,7 @@ Being a subscriber
 ==================
 
 * Add ``django_push.subscriber`` to your ``INSTALLED_APPS`` and
-  run ``manage.py syncdb``
+  run ``manage.py syncdb && manage.py migrate``
 
 * Include ``django_push.subscriber.urls`` in your main urlconf:
 
@@ -50,18 +50,16 @@ Now that you found a hub, you can create a subscription:
     from django_push.subscriber.models import Subscription
 
 
-    subscription = Subscription.objects.subscribe(feed_url, hub=hub)
+    subscription = Subscription.objects.subscribe(feed_url, hub=hub,
+                                                  lease_seconds=12345)
 
-``subscribe()`` takes the feed URL as a required argument. If the hub is not
-provided, the subscription manager will fetch the feed again to find the hub.
+If a subscription for this feed already exists, no new subscription is
+created but the existing subscription is renewed.
 
-If a subscription for this feed already exists, no new subscription will be
-created and the existing subscription will be renewed.
-
-``subscribe()`` also takes an optional ``lease_seconds`` keyword argument. By
-default, it is set to ``None`` and it's up to the hub to decide when the lease
-expires. However, if you provide it, the hub may give you a lease for the
-amount of time you asked.
+``lease_seconds`` is optional and only a hint for the hub. If the hub has
+a custom expiration policy it may chose another value arbitrarily. The value
+chose by the hub is saved in the subscription object when the subscription
+gets verified.
 
 If you want to set a default ``lease_seconds``, you can use the
 ``PUSH_LEASE_SECONDS`` setting.
@@ -70,30 +68,30 @@ Renewing the leases
 -------------------
 
 As we can see, the hub subscription can be valid for a certain amount of time.
-Before they actually expire, hubs must send subscription requests to recheck
-with subscribers if the subscription is still valid. Thus **subscriptions will
-be renewed automatically**.
 
-However, you can always renew the leases manually before the expire to make
-sure they are not forgotten by the hub. For instance, this could be run once
-a day:
+Version 0.3 of the PubSubHubbub spec explains that hub must recheck with
+subscribers before subscriptions expire to automatically renew subscriptions.
+This is not the case in version 0.4 of the spec.
+
+In any case you can renew the leases before the expire to make sure they are
+not forgotten by the hub. For instance, this could be run once a day:
 
 .. code-block:: python
 
     import datetime
 
+    from django.utils import timezone
+
     from django_push.subscriber.models import Subscription
 
 
-    tomorrow = datetime.datetime.utcnow() + datetime.timedelta(days=1)
+    tomorrow = timezone.now() + datetime.timedelta(days=1)
 
-    for subscription in Subscription.objects.filter(verified=True):
-        if subscription.lease_expiration is None:
-            continue
-
-        if subscription.lease_expiration < tomorrow:
-            renewed = Subscription.objects.subscribe(subscription.topic,
-                                                     subscription.hub)
+    for subscription in Subscription.objects.filter(
+        verified=True,
+        lease_expiration__lte=tomorrow
+    ):
+        subscription.subscribe()
 
 Unsubscribing
 -------------
@@ -105,19 +103,16 @@ unsubscribe. This is as simple as doing:
 
     from django_push.subscriber.models import Subscription
 
-
-    Subscription.objects.unsubscribe('http://example.com/feed')
+    subscription = Subscription.objects.get(topic='http://example.com/feed')
+    subscription.unsubscribe()
 
 The hub is notified to cancel the subscription and the Subscription object is
 deleted. You can also specify the hub if you want to:
 
 .. code-block:: python
 
-    Subscription.objects.unsubscribe(feed_url, hub=hub_url)
-
-If you don't provide the ``hub`` keyword argument, the feed is fetched to find
-the hub URL. However specifying the hub may be useful if the feed has several
-hubs.
+    subscription = Subscription.objects.get(topic=feed_url, hub=hub_url)
+    subscription.unsubscribe()
 
 Authentication
 --------------
@@ -133,7 +128,8 @@ the hub URL as a parameter and returns None (no authentication required) or a
         if hub_url == 'http://superfeedr.com/hubbub':
             return ('my_superfeedr_username', 'password')
 
-And then, set the ``PUSH_CREDENTIALS`` setting to your custom function:
+And then, set the ``PUSH_CREDENTIALS`` setting to the dotted path to your
+custom function:
 
 .. code-block:: python
 
@@ -162,114 +158,52 @@ receiver function:
 
 .. code-block:: python
 
+    import feedparser
+
     from django_push.subscriber.signals import updated
 
-
     def listener(notification, **kwargs):
-        for entry in notification.entries:
+        parsed = feedparser.parse(notification)
+        for entry in parsed.entries:
             print entry.title, entry.link
 
     updated.connect(listener)
 
-The ``notification`` parameter is a feedparser-parsed feed containing what's
-changed. You can then save the new entries or do whatever you want in the
-receiver function. Here is an example of the structure of ``notification``,
-this comes directly from the `universal feedparser`_:
+The ``notification`` parameter is the raw payload from the hub. If you expect
+an RSS/Atom feed you should process the payload using a library such as the
+`universal feedparser`_.
 
-.. _universal feedparser: http://www.feedparser.org/
+.. _universal feedparser: http://pythonhosted.org/feedparser/
 
-.. code-block:: python
+Listening with a view instead of the ``updated`` signal
+-------------------------------------------------------
 
-    {'bozo': 0,
-     'encoding': 'utf-8',
-     'entries': [{'id': u'http://example.com/some-url',
-                  'link': u'http://example.com/some-url',
-                  'links': [{'href': u'http://example.com/some-url',
-                             'rel': u'alternate',
-                             'type': 'text/html'}],
-                  'summary': u'test',
-                  'summary_detail': {'base': '',
-                                     'language': u'en-us',
-                                     'type': 'text/html',
-                                     'value': u'This is the content'},
-                  'title': u'test',
-                  'title_detail': {'base': '',
-                                   'language': u'en-us',
-                                   'type': 'text/plain',
-                                   'value': u'This is the title'},
-                  'updated': u'2010-07-05T16:28:35-05:00',
-                  'updated_parsed': time.struct_time(tm_year=2010, tm_mon=7, tm_mday=5, tm_hour=21, tm_min=28, tm_sec=35, tm_wday=0, tm_yday=186, tm_isdst=0)}],
-     'feed': {'id': u'http://example.com/updates/',
-              'language': u'en-us',
-              'link': u'http://example.com/updates/',
-              'links': [{'href': u'http://example.com/updates/',
-                         'rel': u'alternate',
-                         'type': 'text/html'},
-                        {'href': u'http://example.com/pub/feed/',
-                         'rel': u'self',
-                         'type': 'text/html'},
-                        {'href': u'http://pubsubhubbub.appspot.com',
-                         'rel': u'hub',
-                         'type': 'text/html'}],
-              'title': u'Latest entries',
-              'title_detail': {'base': '',
-                               'language': u'en-us',
-                               'type': 'text/plain',
-                               'value': u'Latest entries'},
-              'updated': u'2010-08-11T13:47:53-05:00',
-              'updated_parsed': time.struct_time(tm_year=2010, tm_mon=8, tm_mday=11, tm_hour=18, tm_min=47, tm_sec=53, tm_wday=2, tm_yday=223, tm_isdst=0)},
-     'namespaces': {'': u'http://www.w3.org/2005/Atom'},
-     'version': 'atom10'}
-
-A more detailed example
------------------------
-
-For a more detailed example, let's say we have an ``Entry`` and a ``Feed``
-model:
+If Django signals are not your thing, you can inherit from the base subscriber
+view to listen for notifications:
 
 .. code-block:: python
 
-    from django.db import models
+    from django_push.subscriber.views import CallbackView
 
+    class MyCallback(CallbackView):
+        def handle_subscription(self):
+            payload = self.request.body
+            parsed = feedparser.parse(payload)
+            for entry in payload.entries:
+                do_stuff_with(entry)
+    callback = MyCallback.as_view()
 
-    class Feed(models.Model):
-        url = models.URLField()
-        # ... and some extra fields
-
-    class Entry(models.Model):
-        feed = models.ForeignKey(Feed)
-        title = models.CharField(max_length=255)
-        link = models.URLField()
-        timestamp = models.DateTimeField()
-        summary = models.TextField()
-
-Then we can define a receiver function this way:
+Then instead of including ``django_push.subscriber.urls`` in your urlconf,
+define a custom URL with ``subscriber_callback`` as a name and a ``pk`` named
+parameter:
 
 .. code-block:: python
 
-    def pubsubhubbub_update(notification, **kwargs):
-        parsed = notification
-        entries = []
-        for entry in parsed.entries:
-            e = Entry(title=entry.title)
-            if 'description' in entry:
-                e.summary = entry.description
-            if 'summary' in entry:
-                e.summary = entry.summary
+    from django.conf.urls import patterns, url
 
-            e.link = entry.link
-            e.date = datetime.datetime(*entry.updated_parsed[:6])
-            entries.append(e)
+    from .views import callback
 
-        for link in parsed.feed.links:
-            if link['rel'] == 'self':
-                url = link['href']
-
-        for feed in Feed.objects.filter(url=url):
-            for entry in entries:
-                entry.id = None
-                entry.feed = feed
-                entry.save(force_insert=True)
-
-Each time the callback URL is called, new entries are added to all feeds. Such
-a behaviour can be useful if you're running a multi-user feed reader.
+    urlpatterns = patterns(
+        '',
+        url(r'^subscriber/(?P<pk>\d+)/$', callback, name='subscriber_callback'),
+    )

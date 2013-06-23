@@ -2,13 +2,22 @@ language: python
 python:
   - "2.6"
   - "2.7"
+  - "3.2"
+  - "3.3"
 env:
   - DJANGO_VERSION=1.4.5
   - DJANGO_VERSION=1.5.1
-before_install:
-  - export PIP_USE_MIRRORS=true
-  - export PIP_INDEX_URL=https://simple.crate.io/
 install:
-  - pip install -r requirements-tests.txt Django==$DJANGO_VERSION
+  - pip install -r requirements-dev.txt Django==$DJANGO_VERSION
+  - pip install flake8
+before_script:
+  - flake8 django_push
+  - flake8 tests
 script:
   - python setup.py test
+matrix:
+  exclude:
+    - python: "3.2"
+      env: DJANGO_VERSION=1.4.5
+    - python: "3.3"
+      env: DJANGO_VERSION=1.4.5

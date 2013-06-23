@@ -1,5 +1,8 @@
 import os
 import sys
+import warnings
+
+warnings.simplefilter('always')
 
 from django.conf import settings
 
@@ -14,7 +17,9 @@ def setup_test_environment():
     settings._wrapped = empty
 
     apps = [
+        'django.contrib.sites',
         'tests.publisher',
+        'tests.subscriber',
     ]
 
     settings_dict = {
@@ -31,6 +36,8 @@ def setup_test_environment():
         'STATIC_URL': '/static/',
         'SECRET_KEY': 'test secret key',
         'ROOT_URLCONF': '',
+        'SITE_ID': 1,
+        'PUSH_DOMAIN': 'testserver.com',
     }
 
     settings.configure(**settings_dict)

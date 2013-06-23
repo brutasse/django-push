@@ -9,8 +9,8 @@ class HubAtom1Feed(Atom1Feed):
 
         hub = self.feed.get('hub')
         if hub is not None:
-            handler.addQuickElement(u'link', '', {u'rel': u'hub',
-                                                  u'href': hub})
+            handler.addQuickElement('link', '', {'rel': 'hub',
+                                                 'href': hub})
 
 
 class Feed(BaseFeed):
@@ -19,7 +19,7 @@ class Feed(BaseFeed):
 
     def get_hub(self, obj):
         if self.hub is None:
-            hub = settings.PUSH_HUB
+            hub = getattr(settings, 'PUSH_HUB', None)
         else:
             hub = self.hub
         return hub

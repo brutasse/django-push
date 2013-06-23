@@ -1,0 +1,6 @@
+[run]
+branch = True
+source = django_push
+
+[report]
+omit = *migrations*

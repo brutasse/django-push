@@ -49,15 +49,15 @@ class PubTestCase(TestCase):
     @override_settings(PUSH_HUB='http://hub.example.com')
     def test_hub_declaration(self):
         response = self.client.get(reverse('feed'))
-        hub_declaration = response.content.split('</updated>',
-                                                 1)[1].split('<entry>', 1)[0]
+        hub_declaration = response.content.decode('utf-8').split(
+            '</updated>', 1)[1].split('<entry>', 1)[0]
         self.assertEqual(len(hub_declaration), 53)
         self.assertTrue('rel="hub"' in hub_declaration)
         self.assertTrue('href="http://hub.example.com' in hub_declaration)
 
         response = self.client.get(reverse('override-feed'))
-        hub_declaration = response.content.split('</updated>',
-                                                 1)[1].split('<entry>', 1)[0]
+        hub_declaration = response.content.decode('utf-8').split(
+            '</updated>', 1)[1].split('<entry>', 1)[0]
         self.assertEqual(len(hub_declaration), 64)
         self.assertTrue('rel="hub"' in hub_declaration)
         self.assertFalse('href="http://hub.example.com' in hub_declaration)
@@ -66,11 +66,15 @@ class PubTestCase(TestCase):
         )
 
         response = self.client.get(reverse('dynamic-feed'))
-        hub_declaration = response.content.split('</updated>',
-                                                 1)[1].split('<entry>', 1)[0]
+        hub_declaration = response.content.decode('utf-8').split(
+            '</updated>', 1)[1].split('<entry>', 1)[0]
         self.assertEqual(len(hub_declaration), 62)
         self.assertTrue('rel="hub"' in hub_declaration)
         self.assertFalse('href="http://hub.example.com' in hub_declaration)
         self.assertTrue(
             'href="http://dynamic-hub.example.com/' in hub_declaration
         )
+
+    def test_no_hub(self):
+        response = self.client.get(reverse('feed'))
+        self.assertEqual(response.status_code, 200)

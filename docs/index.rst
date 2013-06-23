@@ -86,6 +86,9 @@ Changelog
         ./manage.py migrate subscriber 0001_initial --fake
         ./manage.py migrate
 
+  * Tremendously improved admin support. If you were using a custom ModelAdmin
+    for subscriptions, you might want to try the built-in one.
+
 * **0.4** (2011-06-30):
 
   * Support for hub authentication via ``PUSH_HUB_CREDENTIALS``.

@@ -28,6 +28,7 @@ class SubscriptionAmin(admin.ModelAdmin):
     list_filter = ('verified', ExpirationFilter, 'hub')
     search_fields = ('topic', 'hub')
     actions = ['renew', 'unsubscribe']
+    readonly_fields = ['callback_url']
 
     def renew(self, request, queryset):
         count = 0

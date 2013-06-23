@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
 import logging
@@ -83,6 +84,13 @@ class Subscription(models.Model):
         if self.lease_expiration:
             return timezone.now() > self.lease_expiration
         return False
+
+    def truncated_topic(self):
+        if len(self.topic) > 50:
+            return self.topic[:49] + '…'
+        return self.topic
+    truncated_topic.short_description = _('Topic')
+    truncated_topic.admin_order_field = 'topic'
 
     @property
     def callback_url(self):

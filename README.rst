@@ -42,3 +42,10 @@ combinations::
 
     pip install tox
     tox
+
+To get code coverage stats::
+
+    pip install coverage
+    coverage run runtests.py
+    coverage html
+    open htmlcov/index.html

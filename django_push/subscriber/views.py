@@ -49,9 +49,9 @@ class CallbackView(generic.View):
             subscription.set_expiration(seconds)
             subscription.verified = True
             logger.debug("Verifying subscription for topic {0} via {1} "
-                         "(expires in {2}".format(subscription.topic,
-                                                  subscription.hub,
-                                                  seconds))
+                         "(expires in {2}s)".format(subscription.topic,
+                                                    subscription.hub,
+                                                    seconds))
             Subscription.objects.filter(pk=subscription.pk).update(
                 verified=True,
                 lease_expiration=subscription.lease_expiration)

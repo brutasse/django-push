@@ -50,7 +50,7 @@ Manual
 Changelog
 ---------
 
-* **0.4**:
+* **0.5**:
 
   * Python 3 support, Django >= 1.4.1 support.
 
@@ -75,16 +75,23 @@ Changelog
     to be processed, as suggested in version 0.4 of the PubSubHubbub spec.
 
   * The callback view is now a class-based view, allowing listening for content
-    distribution via a custom view if thn ``updated`` signal is not suitable.
+    distribution via a custom view if the ``updated`` signal is not suitable.
 
   * ``django.contrib.sites`` is no longer a hard requirement. You can set
-    ``PUSH_DOMAIN`` in your settings to your site's canonical hostnamen
+    ``PUSH_DOMAIN`` in your settings to your site's canonical hostname.
 
-  * South migrations support. If you don't use South, you should. Just **fake
-    the first migration** and apply the others to upgrade an existing site::
+  * South migrations support. If you don't use South, you should. If you're
+    upgrading from 0.4, just **fake the first migration** and apply the
+    others::
 
         ./manage.py migrate subscriber 0001_initial --fake
         ./manage.py migrate
+
+* **0.4** (2011-06-30):
+
+  * Support for hub authentication via ``PUSH_HUB_CREDENTIALS``.
+
+  * Support for SSL callback URLs.
 
 * **0.3** (2010-08-18):
 

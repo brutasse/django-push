@@ -215,3 +215,25 @@ parameter:
         '',
         url(r'^subscriber/(?P<pk>\d+)/$', callback, name='subscriber_callback'),
     )
+
+Logging
+-------
+
+You can listen for log messages by configuring the ``django_push`` logger:
+
+.. code-block:: python
+
+    LOGGING = {
+        'handlers': {
+            'console': {
+                'level': 'DEBUG',
+                'class': 'logging.StreamHandler',
+            },
+        },
+        'loggers': {
+            'django_push': {
+                'handlers': ['console'],
+                'level': 'DEBUG',
+            },
+        },
+    }

@@ -36,8 +36,6 @@ Installation
 
     pip install django-push
 
-This should also install ``feedparser`` if you don't have it already.
-
 Manual
 ------
 

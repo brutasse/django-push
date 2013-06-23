@@ -69,8 +69,7 @@ class Subscription(models.Model):
                                     blank=True)
     lease_expiration = models.DateTimeField(_('Lease expiration'),
                                             null=True, blank=True)
-    secret = models.CharField(_('Secret'), max_length=255,
-                              null=True, blank=True)
+    secret = models.CharField(_('Secret'), max_length=255, blank=True)
 
     objects = SubscriptionManager()
 

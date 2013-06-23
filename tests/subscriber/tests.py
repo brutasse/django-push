@@ -68,7 +68,7 @@ class SubscriberTestCase(TestCase):
         post.return_value = response(status_code=202)
         s = Subscription.objects.subscribe(
             'http://foo.com/insecure', hub='http://insecure.example.com/hub')
-        self.assertIs(s.secret, None)
+        self.assertEqual(s.secret, '')
         s = Subscription.objects.subscribe(
             'http://foo.com/secure', hub='https://secure.example.com/hub')
         self.assertEqual(len(s.secret), 50)

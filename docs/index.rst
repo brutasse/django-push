@@ -81,6 +81,9 @@ Changelog
   * ``django.contrib.sites`` is no longer a hard requirement. You can set
     ``PUSH_DOMAIN`` in your settings to your site's canonical hostnamen
 
+  * South migrations support. If you don't use South, you should. Just **fake
+    the first migration** and apply the others to upgrade an existing site.
+
 * **0.3** (2010-08-18):
 
   * Subscribers can unsubscribe.

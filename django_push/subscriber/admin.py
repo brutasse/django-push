@@ -1,8 +1,8 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _, ungettext
 
-from django_push.subscriber.models import Subscription
+from django_push.subscriber.models import Subscription, SubscriptionError
 
 
 class ExpirationFilter(admin.SimpleListFilter):
@@ -31,25 +31,47 @@ class SubscriptionAmin(admin.ModelAdmin):
 
     def renew(self, request, queryset):
         count = 0
+        failed = 0
         for subscription in queryset:
-            subscription.subscribe()
-            count += 1
-        message = ungettext(
-            '%s subscription was successfully renewed.',
-            '%s subscriptions were successfully renewd.',
-            count) % count
-        self.message_user(request, message)
+            try:
+                subscription.subscribe()
+                count += 1
+            except SubscriptionError:
+                failed += 1
+        if count:
+            message = ungettext(
+                '%s subscription was successfully renewed.',
+                '%s subscriptions were successfully renewd.',
+                count) % count
+            self.message_user(request, message)
+        if failed:
+            message = ungettext(
+                'Failed to renew %s subscription.',
+                'Failed to renew %s subscriptions.',
+                count) % count
+            self.message_user(request, message, level=messages.ERROR)
     renew.short_description = _('Renew selected subscriptions')
 
     def unsubscribe(self, request, queryset):
         count = 0
+        failed = 0
         for subscription in queryset:
-            subscription.unsubscribe()
-            count += 1
-        message = ungettext(
-            'Successfully unsubscribed from %s topic.',
-            'Successfully unsubscribed from %s topics.',
-            count) % count
-        self.message_user(request, message)
+            try:
+                subscription.unsubscribe()
+                count += 1
+            except SubscriptionError:
+                failed += 1
+        if count:
+            message = ungettext(
+                'Successfully unsubscribed from %s topic.',
+                'Successfully unsubscribed from %s topics.',
+                count) % count
+            self.message_user(request, message)
+        if failed:
+            message = ungettext(
+                'Failed to unsubscribe from %s topic.',
+                'Failed to unsubscribe from %s topics.',
+                count) % count
+            self.message_user(request, message, level=messages.ERROR)
     unsubscribe.short_description = _('Unsubscribe from selected topics')
 admin.site.register(Subscription, SubscriptionAmin)

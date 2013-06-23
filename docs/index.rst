@@ -57,10 +57,10 @@ Changelog
 
   * Deprecation of ``Subscription.objects.unsubscribe()`` in favor of an
     instance method on the subscription object. The ``unsubscribe()`` manager
-    method will be removed in version 0.5.
+    method will be removed in version 0.6.
 
   * ``Subscription.objects.subscribe()`` raises a warning if the ``hub`` kwarg
-    is not provided. It will become mandatory in version 0.5.
+    is not provided. It will become mandatory in version 0.6.
 
   * Removed ``hub.verify_token`` from subscription requests. It's optional in
     the 0.3 spec and absent from the 0.4 spec.

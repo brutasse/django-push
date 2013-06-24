@@ -49,7 +49,7 @@ Manual
 Changelog
 ---------
 
-* **0.5**:
+* **0.5** (2013-06-24):
 
   * Python 3 support, Django >= 1.4.1 support.
 

@@ -49,7 +49,7 @@ class SubscriptionAmin(admin.ModelAdmin):
             message = ungettext(
                 'Failed to renew %s subscription.',
                 'Failed to renew %s subscriptions.',
-                count) % count
+                failed) % failed
             self.message_user(request, message, level=messages.ERROR)
     renew.short_description = _('Renew selected subscriptions')
 
@@ -72,7 +72,7 @@ class SubscriptionAmin(admin.ModelAdmin):
             message = ungettext(
                 'Failed to unsubscribe from %s topic.',
                 'Failed to unsubscribe from %s topics.',
-                count) % count
+                failed) % failed
             self.message_user(request, message, level=messages.ERROR)
     unsubscribe.short_description = _('Unsubscribe from selected topics')
 admin.site.register(Subscription, SubscriptionAmin)

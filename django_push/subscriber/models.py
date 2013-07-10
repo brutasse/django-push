@@ -2,7 +2,6 @@
 from __future__ import unicode_literals
 
 import logging
-import warnings
 
 from datetime import timedelta
 
@@ -40,17 +39,6 @@ class SubscriptionManager(models.Manager):
                                                    defaults=defaults)
         subscription.subscribe(lease_seconds=lease_seconds)
         return subscription
-
-    def unsubscribe(self, topic, hub=None):
-        warnings.warn("The unsubscribe manager method is deprecated and is "
-                      "now available as a method on the subscription instance "
-                      "directly.", DeprecationWarning)
-        try:
-            subscription = Subscription.objects.get(topic=topic, hub=hub)
-        except self.model.DoesNotExist:
-            return
-
-        subscription.unsubscribe()
 
 
 class Subscription(models.Model):

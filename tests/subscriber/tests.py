@@ -90,7 +90,7 @@ class SubscriberTestCase(TestCase):
         s = Subscription.objects.create(topic='http://example.com/feed',
                                         hub='http://hub.example.com')
         post.assert_not_called()
-        Subscription.objects.unsubscribe(s.topic, s.hub)
+        s.unsubscribe()
         post.assert_called_once_with(
             'http://hub.example.com',
             data={
@@ -101,8 +101,6 @@ class SubscriberTestCase(TestCase):
             },
             auth=None,
         )
-        # This doesn't fail
-        Subscription.objects.unsubscribe('foo', 'bar')
 
     @mock.patch('requests.post')
     def test_subscribe_lease_seconds(self, post):

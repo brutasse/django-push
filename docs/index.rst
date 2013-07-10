@@ -49,6 +49,17 @@ Manual
 Changelog
 ---------
 
+* **0.6**
+
+  * Removed ``get_hub()``.
+
+  * Removed the ``unsubscribe()`` manager method. Unsubscribing must be done
+    with subscription instances.
+
+  * Added ``request`` and ``links`` keyword arguments to the ``updated``
+    signal. ``request`` is the raw HTTP request object, ``links`` is a parsed
+    version of the ``Link`` header, if present.
+
 * **0.5** (2013-06-24):
 
   * Python 3 support, Django >= 1.4.1 support.

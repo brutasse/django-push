@@ -7,6 +7,7 @@ from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views import generic
 from django.views.decorators.csrf import csrf_exempt
+from requests.utils import parse_header_links
 
 from .models import Subscription
 from .signals import updated
@@ -86,7 +87,13 @@ class CallbackView(generic.View):
                                                             signature,
                                                             digest))
                 return HttpResponse('')
-        updated.send(sender=subscription, notification=request.body)
+
+        self.links = None
+        if 'HTTP_LINK' in request.META:
+            self.links = parse_header_links(request.META['HTTP_LINK'])
+        updated.send(sender=subscription, notification=request.body,
+                     request=request, links=self.links)
+        self.subscription = subscription
         self.handle_subscription()
         return HttpResponse('')
 

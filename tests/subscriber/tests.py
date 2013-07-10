@@ -287,3 +287,21 @@ class SubscriberTestCase(TestCase):
                                     HTTP_X_HUB_SIGNATURE=sig)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(self.signals), 1)
+
+    def test_payload_link_headers(self):
+        s = Subscription.objects.create(topic='foo', hub='bar')
+        url = reverse('subscriber_callback', args=[s.pk])
+
+        self.assertEqual(len(self.signals), 0)
+        response = self.client.post(
+            url, 'foo', content_type='text/plain', HTTP_LINK=(
+                '<http://joemygod.blogspot.com/feeds/posts/default>; '
+                'rel="self",<http://pubsubhubbub.appspot.com/>; rel="hub"'
+            ))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(self.signals), 1)
+        for link in self.signals[0][2]['links']:
+            if link['rel'] == 'self':
+                break
+        self.assertEqual(link['url'],
+                         "http://joemygod.blogspot.com/feeds/posts/default")

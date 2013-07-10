@@ -181,6 +181,19 @@ The ``notification`` parameter is the raw payload from the hub. If you expect
 an RSS/Atom feed you should process the payload using a library such as the
 `universal feedparser`_.
 
+``kwargs`` also contains the raw HTTP request object and the parsed ``Link``
+header if it is present. You can take advantage of them to validate the
+notification:
+
+.. code-block:: python
+
+    def listener(notification, request, links, **kwargs):
+        if links is not None:
+            for link in links:
+                if link['rel'] == 'self':
+                    break
+            url = link['url']  # This is the topic URL
+
 .. _universal feedparser: http://pythonhosted.org/feedparser/
 
 Listening with a view instead of the ``updated`` signal
@@ -215,6 +228,9 @@ parameter:
         '',
         url(r'^subscriber/(?P<pk>\d+)/$', callback, name='subscriber_callback'),
     )
+
+In the ``handle_subscription`` method of the view, you can access
+``self.request``, ``self.subscription`` and ``self.links``.
 
 Logging
 -------

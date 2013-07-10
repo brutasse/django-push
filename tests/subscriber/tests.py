@@ -1,5 +1,4 @@
 import mock
-import warnings
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured

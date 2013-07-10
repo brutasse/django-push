@@ -1,8 +1,4 @@
-import warnings
-
 from functools import partial
-
-import requests
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
@@ -15,18 +11,6 @@ generate_random_string = partial(
     length=50,
     allowed_chars='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
                   '0123456789!@#$%^&*(-_=+)')
-
-
-def get_hub(topic):
-    import feedparser
-    warnings.warn("get_hub is deprecated. Use your own utility function "
-                  "instead.", DeprecationWarning)
-    response = requests.get(topic)
-    parsed = feedparser.parse(response.text)
-    for link in parsed.feed.links:
-        if link['rel'] == 'hub':
-            return link['href']
-    raise TypeError("Hub not found")
 
 
 def hub_credentials(hub_url):

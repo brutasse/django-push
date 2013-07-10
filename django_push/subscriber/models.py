@@ -19,8 +19,7 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
-from .utils import (get_hub, get_hub_credentials, generate_random_string,
-                    get_domain)
+from .utils import get_hub_credentials, generate_random_string, get_domain
 
 logger = logging.getLogger(__name__)
 
@@ -30,12 +29,7 @@ class SubscriptionError(Exception):
 
 
 class SubscriptionManager(models.Manager):
-    def subscribe(self, topic, hub=None, lease_seconds=None):
-        if hub is None:
-            warnings.warn("Subscribing without providing the hub is "
-                          "deprecated.", DeprecationWarning)
-            hub = get_hub(topic)
-
+    def subscribe(self, topic, hub, lease_seconds=None):
         # Only use a secret over HTTPS
         scheme = urlparse(hub).scheme
         defaults = {}
@@ -51,9 +45,6 @@ class SubscriptionManager(models.Manager):
         warnings.warn("The unsubscribe manager method is deprecated and is "
                       "now available as a method on the subscription instance "
                       "directly.", DeprecationWarning)
-        if hub is None:
-            hub = get_hub(topic)
-
         try:
             subscription = Subscription.objects.get(topic=topic, hub=hub)
         except self.model.DoesNotExist:

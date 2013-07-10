@@ -52,16 +52,6 @@ class SubscriberTestCase(TestCase):
     def test_subscribe_no_hub_warning(self, post, get):
         post.return_value = response(status_code=202)
         get.return_value = response(status_code=200, content="""<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en-us"><title></title><link href="http://testserver/overriden-feed/" rel="alternate"></link><link href="http://testserver/override-feed/" rel="self"></link><id>http://testserver/overriden-feed/</id><updated>2013-06-23T10:58:30Z</updated><link href="http://example.com/overridden-hub" rel="hub"></link></feed>""")  # noqa
-        with warnings.catch_warnings(record=True) as w:
-            Subscription.objects.subscribe('http://example.com/warn')
-        self.assertEqual(len(w), 2)
-        self.assertEqual(
-            w[0].message.args[0],
-            "Subscribing without providing the hub is deprecated.")
-        self.assertEqual(
-            w[1].message.args[0],
-            "get_hub is deprecated. Use your own utility function instead."
-        )
 
     @mock.patch('requests.post')
     def test_subscription_secret(self, post):

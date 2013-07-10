@@ -49,7 +49,7 @@ Manual
 Changelog
 ---------
 
-* **0.6**
+* **0.6** (2013-07-10):
 
   * Removed ``get_hub()``.
 

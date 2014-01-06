@@ -40,6 +40,7 @@ class SubscriberTestCase(TestCase):
                 'hub.mode': 'subscribe',
             },
             auth=None,
+            timeout=None,
         )
 
         s = Subscription.objects.get(pk=s.pk)
@@ -99,6 +100,7 @@ class SubscriberTestCase(TestCase):
                 'hub.mode': 'unsubscribe',
             },
             auth=None,
+            timeout=None,
         )
 
     @mock.patch('requests.post')
@@ -117,7 +119,28 @@ class SubscriberTestCase(TestCase):
                 'hub.mode': 'subscribe',
                 'hub.lease_seconds': 12,
             },
-            auth=None)
+            auth=None,
+            timeout=None,
+            )
+
+    @mock.patch('requests.post')
+    def test_subscribe_timeout(self, post):
+        post.return_value = response(status_code=202)
+        with self.settings(PUSH_TIMEOUT=10):  # overriden in the call
+            s = Subscription.objects.subscribe('http://test.example.com/feed',
+                                               hub='http://hub.example.com',
+                                               )
+        post.assert_called_once_with(
+            'http://hub.example.com',
+            data={
+                'hub.callback': s.callback_url,
+                'hub.verify': ['sync', 'async'],
+                'hub.topic': 'http://test.example.com/feed',
+                'hub.mode': 'subscribe',
+            },
+            auth=None,
+            timeout=10,
+            )
 
     @mock.patch('requests.post')
     def test_lease_seconds_from_settings(self, post):
@@ -134,7 +157,9 @@ class SubscriberTestCase(TestCase):
                 'hub.mode': 'subscribe',
                 'hub.lease_seconds': 2592000,
             },
-            auth=None)
+            auth=None,
+            timeout=None,
+            )
 
     @mock.patch('requests.post')
     def test_subscription_error(self, post):
@@ -157,7 +182,9 @@ class SubscriberTestCase(TestCase):
                 'hub.topic': 'http://example.com/test',
                 'hub.mode': 'subscribe',
             },
-            auth=('username', 'password'))
+            auth=('username', 'password'),
+            timeout=None,
+            )
 
     def test_missing_callback_params(self):
         s = Subscription.objects.create(topic='foo', hub='bar')

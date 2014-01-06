@@ -72,6 +72,11 @@ gets verified.
 If you want to set a default ``lease_seconds``, you can use the
 ``PUSH_LEASE_SECONDS`` setting.
 
+If there's a danger of hub freezing the connection (it happens in the wild) 
+you can use the ``PUSH_TIMEOUT`` setting. It's value should be the number 
+of seconds (float) to wait for the subscription request to finish. Good number
+might be 60.
+
 Renewing the leases
 -------------------
 

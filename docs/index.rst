@@ -49,6 +49,11 @@ Manual
 Changelog
 ---------
 
+* **0.6.1** (2014-01-14):
+
+  * Added ``PUSH_TIMEOUT`` setting for passing timeouts to the
+    subscribe/unsubscribe HTTP calls.
+
 * **0.6** (2013-07-10):
 
   * Removed ``get_hub()``.

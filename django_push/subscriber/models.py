@@ -105,9 +105,7 @@ class Subscription(models.Model):
 
         credentials = get_hub_credentials(self.hub)
         timeout = getattr(settings, 'PUSH_TIMEOUT', None)
-        response = requests.post(self.hub, 
-                                 data=params, 
-                                 auth=credentials, 
+        response = requests.post(self.hub, data=params, auth=credentials,
                                  timeout=timeout)
 
         if response.status_code in (202, 204):

@@ -121,7 +121,7 @@ class SubscriberTestCase(TestCase):
             },
             auth=None,
             timeout=None,
-            )
+        )
 
     @mock.patch('requests.post')
     def test_subscribe_timeout(self, post):
@@ -140,7 +140,7 @@ class SubscriberTestCase(TestCase):
             },
             auth=None,
             timeout=10,
-            )
+        )
 
     @mock.patch('requests.post')
     def test_lease_seconds_from_settings(self, post):
@@ -159,7 +159,7 @@ class SubscriberTestCase(TestCase):
             },
             auth=None,
             timeout=None,
-            )
+        )
 
     @mock.patch('requests.post')
     def test_subscription_error(self, post):
@@ -184,7 +184,7 @@ class SubscriberTestCase(TestCase):
             },
             auth=('username', 'password'),
             timeout=None,
-            )
+        )
 
     def test_missing_callback_params(self):
         s = Subscription.objects.create(topic='foo', hub='bar')

@@ -4,3 +4,4 @@ dist
 .coverage
 htmlcov
 .tox
+build

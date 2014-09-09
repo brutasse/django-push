@@ -49,6 +49,10 @@ Manual
 Changelog
 ---------
 
+* **0.6.2** (2014-09-09):
+
+  * Fix for adding subscriptions via the django admin
+
 * **0.6.1** (2014-01-14):
 
   * Added ``PUSH_TIMEOUT`` setting for passing timeouts to the

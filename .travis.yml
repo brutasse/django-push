@@ -17,6 +17,8 @@ env:
   - TOXENV=py34-15
   - TOXENV=py34-16
   - TOXENV=py34-17
+  - TOXENV=docs
+  - TOXENV=lint
 install:
   - pip install tox
 script:

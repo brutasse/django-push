@@ -120,7 +120,7 @@ class Subscription(models.Model):
                 if mode == 'unsubscribe':
                     self.pending_unsubscription = True
                     # TODO check for making sure unsubscriptions are legit
-                    #Subscription.objects.filter(pk=self.pk).update(
+                    # Subscription.objects.filter(pk=self.pk).update(
                     #    pending_unsubscription=True)
             return response
 

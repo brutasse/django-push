@@ -4,50 +4,20 @@ import warnings
 
 warnings.simplefilter('always')
 
+import django
+
 from django.conf import settings
-
-try:
-    from django.utils.functional import empty
-except ImportError:
-    empty = None
-
-
-def setup_test_environment():
-    # reset settings
-    settings._wrapped = empty
-
-    apps = [
-        'django.contrib.sites',
-        'tests.publisher',
-        'tests.subscriber',
-    ]
-
-    settings_dict = {
-        'DATABASES': {
-            'default': {
-                'ENGINE': 'django.db.backends.sqlite3',
-                'NAME': os.path.join(
-                    os.path.abspath(os.path.dirname(__file__)),
-                    'push.sqlite',
-                ),
-            },
-        },
-        'INSTALLED_APPS': apps,
-        'STATIC_URL': '/static/',
-        'SECRET_KEY': 'test secret key',
-        'ROOT_URLCONF': '',
-        'SITE_ID': 1,
-        'PUSH_DOMAIN': 'testserver.com',
-    }
-
-    settings.configure(**settings_dict)
+from django.utils.functional import empty
 
 
 def runtests(*test_args):
-    setup_test_environment()
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'tests.settings')
 
     parent = os.path.dirname(os.path.abspath(__file__))
     sys.path.insert(0, parent)
+
+    if django.VERSION >= (1, 7):
+        django.setup()
 
     from django.test.simple import DjangoTestSuiteRunner
     runner = DjangoTestSuiteRunner(verbosity=1, interactive=True,

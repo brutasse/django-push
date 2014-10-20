@@ -23,7 +23,7 @@ class CallbackView(generic.View):
     def get(self, request, pk, *args, **kwargs):
         subscription = get_object_or_404(Subscription, pk=pk)
         params = ['hub.mode', 'hub.topic', 'hub.challenge']
-        missing = [p for p in params if not p in request.GET]
+        missing = [p for p in params if p not in request.GET]
         if missing:
             return HttpResponseBadRequest("Missing parameters: {0}".format(
                 ", ".join(missing)))

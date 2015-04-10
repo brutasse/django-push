@@ -2,15 +2,12 @@ import os
 import sys
 import warnings
 
-warnings.simplefilter('always')
-
 import django
 
-from django.conf import settings
-from django.utils.functional import empty
+warnings.simplefilter('always')
 
 
-def runtests(*test_args):
+def runtests():
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'tests.settings')
 
     parent = os.path.dirname(os.path.abspath(__file__))
@@ -19,10 +16,13 @@ def runtests(*test_args):
     if django.VERSION >= (1, 7):
         django.setup()
 
-    from django.test.simple import DjangoTestSuiteRunner
-    runner = DjangoTestSuiteRunner(verbosity=1, interactive=True,
-                                   failfast=False)
-    failures = runner.run_tests(test_args)
+    try:
+        from django.test.runner import DiscoverRunner
+    except ImportError:
+        from discover_runner.runner import DiscoverRunner
+    runner = DiscoverRunner(verbosity=1, interactive=True,
+                            failfast=False)
+    failures = runner.run_tests(())
     sys.exit(failures)
 
 

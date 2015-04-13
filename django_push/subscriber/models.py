@@ -74,10 +74,12 @@ class Subscription(models.Model):
 
     @property
     def callback_url(self):
-        callback_url = reverse('subscriber_callback', args=[self.pk])
-        use_ssl = getattr(settings, 'PUSH_SSL_CALLBACK', False)
-        scheme = 'https' if use_ssl else 'http'
-        return '%s://%s%s' % (scheme, get_domain(), callback_url)
+        if self.pk:
+            callback_url = reverse('subscriber_callback', args=[self.pk])
+            use_ssl = getattr(settings, 'PUSH_SSL_CALLBACK', False)
+            scheme = 'https' if use_ssl else 'http'
+            return '%s://%s%s' % (scheme, get_domain(), callback_url)
+        return None
 
     def subscribe(self, lease_seconds=None):
         return self.send_request(mode='subscribe', lease_seconds=lease_seconds)

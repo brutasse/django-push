@@ -68,7 +68,7 @@ class SubscriberTestCase(TestCase):
         post.return_value = response(status_code=204)
         Subscription.objects.subscribe("http://example.com/feed",
                                        "http://hub.domain.com/hub")
-        post.assert_called_once()
+        self.assertEqual(len(post.call_args_list), 1)
         subscription = Subscription.objects.get()
         self.assertEqual(subscription.verified, True)
 

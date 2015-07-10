@@ -1,3 +1,0 @@
-feedparser
-mock
-requests

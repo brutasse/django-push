@@ -49,6 +49,10 @@ Manual
 Changelog
 ---------
 
+* **0.7** (2015-07-10):
+
+  * Remove warnings with Django versions up to 1.8.
+
 * **0.6.1** (2014-01-14):
 
   * Added ``PUSH_TIMEOUT`` setting for passing timeouts to the

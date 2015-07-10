@@ -12,8 +12,6 @@ from django_push.publisher import ping_hub
 
 
 class PubTestCase(TestCase):
-    urls = 'tests.publisher.urls'
-
     @mock.patch('requests.post')
     def test_explicit_ping(self, post):
         post.return_value = 'Response'

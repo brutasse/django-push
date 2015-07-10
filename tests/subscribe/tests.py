@@ -18,8 +18,6 @@ from .. import response
 
 
 class SubscriberTestCase(TestCase):
-    urls = 'tests.subscriber.urls'
-
     def setUp(self):
         self.signals = []
         updated.connect(self._signal_handler)
@@ -171,7 +169,7 @@ class SubscriberTestCase(TestCase):
             Subscription.objects.subscribe('http://example.com/test',
                                            hub='http://hub.example.com')
 
-    @override_settings(PUSH_CREDENTIALS='tests.subscriber.credentials')
+    @override_settings(PUSH_CREDENTIALS='tests.subscribe.credentials')
     @mock.patch('requests.post')
     def test_hub_credentials(self, post):
         post.return_value = response(status_code=202)

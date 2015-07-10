@@ -10,15 +10,16 @@ DATABASES = {
 
 INSTALLED_APPS = (
     'django.contrib.sites',
+    'django_push.subscriber',
     'tests.publisher',
-    'tests.subscriber',
+    'tests.subscribe',
 )
 
 STATIC_URL = '/static/'
 
 SECRET_KEY = 'test secret key'
 
-ROOT_URLCONF = ''
+ROOT_URLCONF = 'tests.publisher.urls'
 
 SITE_ID = 1
 

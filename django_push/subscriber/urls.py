@@ -1,9 +1,8 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 
 from .views import callback
 
 
-urlpatterns = patterns(
-    '',
+urlpatterns = [
     url(r'^(?P<pk>\d+)/$', callback, name='subscriber_callback'),
-)
+]

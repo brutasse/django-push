@@ -24,3 +24,5 @@ ROOT_URLCONF = 'tests.publisher.urls'
 SITE_ID = 1
 
 PUSH_DOMAIN = 'testserver.com'
+
+MIDDLEWARE_CLASSES = ()

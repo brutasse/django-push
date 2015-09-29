@@ -49,9 +49,12 @@ Manual
 Changelog
 ---------
 
-* **0.8** (TBA):
+* **0.8** (2015-09-29):
 
   * Remove support for Django < 1.7.
+
+  * Use a transaction hook in ``Subscription.objects.subscribe()`` when
+    available (Django 1.9+).
 
 * **0.7** (2015-07-10):
 

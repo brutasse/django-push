@@ -12,9 +12,10 @@ except ImportError:  # python2
 
 import requests
 
+import django
 from django.conf import settings
 from django.core.urlresolvers import reverse
-from django.db import models
+from django.db import models, transaction
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
@@ -37,7 +38,16 @@ class SubscriptionManager(models.Manager):
 
         subscription, created = self.get_or_create(hub=hub, topic=topic,
                                                    defaults=defaults)
-        subscription.subscribe(lease_seconds=lease_seconds)
+        # Transaction hooks are new in Django 1.9.
+        # If this code runs in a @transaction.atomic block and the Subscription
+        # object is created above, it isn't available until the transaction
+        # commits. At that point, it's safe to send a subscription request
+        # which then pings back to the the Subscription object.
+        subscribe = lambda: subscription.subscribe(lease_seconds=lease_seconds)
+        if django.VERSION >= (1, 9):
+            transaction.on_commit(subscribe)
+        else:
+            subscribe()
         return subscription
 
 

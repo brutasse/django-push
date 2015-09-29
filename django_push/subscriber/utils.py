@@ -1,13 +1,9 @@
 from functools import partial
+from importlib import import_module
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.crypto import get_random_string
-
-try:
-    from importlib import import_module
-except ImportError:
-    from django.utils.importlib import import_module
 
 
 generate_random_string = partial(

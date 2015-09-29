@@ -49,6 +49,10 @@ Manual
 Changelog
 ---------
 
+* **0.8** (TBA):
+
+  * Remove support for Django < 1.7.
+
 * **0.7** (2015-07-10):
 
   * Remove warnings with Django versions up to 1.8.

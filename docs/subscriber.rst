@@ -2,16 +2,16 @@ Being a subscriber
 ==================
 
 * Add ``django_push.subscriber`` to your ``INSTALLED_APPS`` and
-  run ``manage.py syncdb``. If you use South, run ``manage.py migrate``.
+  run ``manage.py migrate``.
 
 * Include ``django_push.subscriber.urls`` in your main urlconf:
 
   .. code-block:: python
 
-      urlpatterns = patterns('',
+      urlpatterns = [
           # ...
           url(r'^subscriber/', include('django_push.subscriber.urls')),
-      )
+      ]
 
 * If you have ``django.contrib.sites`` installed, make sure it is correctly
   configured: check that ``Site.objects.get_current()`` actually returns the
@@ -72,8 +72,8 @@ gets verified.
 If you want to set a default ``lease_seconds``, you can use the
 ``PUSH_LEASE_SECONDS`` setting.
 
-If there's a danger of hub freezing the connection (it happens in the wild) 
-you can use the ``PUSH_TIMEOUT`` setting. Its value should be the number 
+If there's a danger of hub freezing the connection (it happens in the wild)
+you can use the ``PUSH_TIMEOUT`` setting. Its value should be the number
 of seconds (float) to wait for the subscription request to finish. Good number
 might be 60.
 

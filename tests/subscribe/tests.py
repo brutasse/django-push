@@ -6,7 +6,7 @@ except ImportError:
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse
-from django.test import TestCase
+from django.test import TransactionTestCase
 from django.test.utils import override_settings
 from django.utils import timezone
 
@@ -17,7 +17,7 @@ from django_push.subscriber.signals import updated
 from .. import response
 
 
-class SubscriberTestCase(TestCase):
+class SubscriberTestCase(TransactionTestCase):
     def setUp(self):
         self.signals = []
         updated.connect(self._signal_handler)

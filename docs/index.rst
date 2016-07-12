@@ -53,6 +53,8 @@ Changelog
 
   * Remove support for Django 1.7.
 
+  * Drop support for Python 3.2.
+
 * **0.8** (2015-09-29):
 
   * Remove support for Django < 1.7.

@@ -3,7 +3,6 @@ python: 3.4
 sudo: false
 env:
   - TOXENV=py27-django18
-  - TOXENV=py32-django18
   - TOXENV=py33-django18
   - TOXENV=py34-django18
   - TOXENV=docs

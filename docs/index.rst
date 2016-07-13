@@ -49,7 +49,7 @@ Manual
 Changelog
 ---------
 
-* **0.9** (2016-XX-XX):
+* **0.9** (2016-07-13):
 
   * Remove support for Django 1.7.
 

@@ -17,7 +17,7 @@ Usage
 
 The documentation is `available on ReadTheDocs`_.
 
-.. _available on ReadTheDocs: https://django-push.readthedocs.org/
+.. _available on ReadTheDocs: https://django-push.readthedocs.io/
 
 Contributing
 ------------

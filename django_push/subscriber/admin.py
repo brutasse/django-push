@@ -75,4 +75,6 @@ class SubscriptionAmin(admin.ModelAdmin):
                 failed) % failed
             self.message_user(request, message, level=messages.ERROR)
     unsubscribe.short_description = _('Unsubscribe from selected topics')
+
+
 admin.site.register(Subscription, SubscriptionAmin)

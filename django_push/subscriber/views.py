@@ -100,4 +100,6 @@ class CallbackView(generic.View):
     def handle_subscription(self):
         """Subclasses may implement this"""
         pass
+
+
 callback = CallbackView.as_view()

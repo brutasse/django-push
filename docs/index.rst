@@ -49,6 +49,10 @@ Manual
 Changelog
 ---------
 
+* **1.0** (2017-XX-XX):
+
+  * Confirm support for Django 1.11 (no code changes required).
+
 * **0.9** (2016-07-13):
 
   * Remove support for Django 1.7.

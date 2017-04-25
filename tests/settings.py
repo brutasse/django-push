@@ -1,5 +1,7 @@
 import os
 
+import django
+
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 DATABASES = {
     'default': {
@@ -25,4 +27,7 @@ SITE_ID = 1
 
 PUSH_DOMAIN = 'testserver.com'
 
-MIDDLEWARE_CLASSES = ()
+if django.VERSION >= (1, 10):
+    MIDDLEWARE = ()
+else:
+    MIDDLEWARE_CLASSES = ()

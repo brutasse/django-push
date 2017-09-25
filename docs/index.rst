@@ -53,6 +53,8 @@ Changelog
 
   * Remove support for Django < 1.11.
 
+  * Add support for Django 2.0.
+
 * **1.0** (2017-04-25):
 
   * Confirm support for Django 1.11 (no code changes required).

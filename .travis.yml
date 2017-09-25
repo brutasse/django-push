@@ -4,14 +4,19 @@ sudo: false
 env:
   - TOXENV=py27-django111
   - TOXENV=py34-django111
+  - TOXENV=py34-django20
   - TOXENV=docs
   - TOXENV=lint
 matrix:
   include:
   - python: 3.5
     env: TOXENV=py35-django111
+  - python: 3.5
+    env: TOXENV=py35-django20
   - python: 3.6
     env: TOXENV=py36-django111
+  - python: 3.6
+    env: TOXENV=py36-django20
 install:
   - pip install tox
 script:

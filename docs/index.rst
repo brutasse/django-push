@@ -49,7 +49,7 @@ Manual
 Changelog
 ---------
 
-* ** 2.0** (YYYY-MM-DD)
+* **1.1** (2018-06-06)
 
   * Remove support for Django < 1.11.
 

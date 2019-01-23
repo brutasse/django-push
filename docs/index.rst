@@ -49,6 +49,10 @@ Manual
 Changelog
 ---------
 
+* **1.2** (YYYY-MM-DD)
+
+  * Add testing for Django 2.2 (no code changes required).
+
 * **1.1** (2018-06-06)
 
   * Remove support for Django < 1.11.

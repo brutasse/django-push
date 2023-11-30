@@ -5,7 +5,7 @@ from django.utils.feedgenerator import Atom1Feed
 
 class HubAtom1Feed(Atom1Feed):
     def add_root_elements(self, handler):
-        super(HubAtom1Feed, self).add_root_elements(handler)
+        super().add_root_elements(handler)
 
         hub = self.feed.get('hub')
         if hub is not None:
@@ -25,6 +25,6 @@ class Feed(BaseFeed):
         return hub
 
     def feed_extra_kwargs(self, obj):
-        kwargs = super(Feed, self).feed_extra_kwargs(obj)
+        kwargs = super().feed_extra_kwargs(obj)
         kwargs['hub'] = self.get_hub(obj)
         return kwargs

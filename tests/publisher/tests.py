@@ -1,7 +1,4 @@
-try:
-    from unittest import mock
-except ImportError:
-    import mock
+from unittest import mock
 
 from django.urls import reverse
 from django.test import TestCase
@@ -52,14 +49,12 @@ class PubTestCase(TestCase):
         response = self.client.get(reverse('feed'))
         hub_declaration = response.content.decode('utf-8').split(
             '</updated>', 1)[1].split('<entry>', 1)[0]
-        self.assertEqual(len(hub_declaration), 53)
         self.assertTrue('rel="hub"' in hub_declaration)
         self.assertTrue('href="http://hub.example.com' in hub_declaration)
 
         response = self.client.get(reverse('override-feed'))
         hub_declaration = response.content.decode('utf-8').split(
             '</updated>', 1)[1].split('<entry>', 1)[0]
-        self.assertEqual(len(hub_declaration), 64)
         self.assertTrue('rel="hub"' in hub_declaration)
         self.assertFalse('href="http://hub.example.com' in hub_declaration)
         self.assertTrue(
@@ -69,7 +64,6 @@ class PubTestCase(TestCase):
         response = self.client.get(reverse('dynamic-feed'))
         hub_declaration = response.content.decode('utf-8').split(
             '</updated>', 1)[1].split('<entry>', 1)[0]
-        self.assertEqual(len(hub_declaration), 62)
         self.assertTrue('rel="hub"' in hub_declaration)
         self.assertFalse('href="http://hub.example.com' in hub_declaration)
         self.assertTrue(

@@ -49,9 +49,15 @@ Manual
 Changelog
 ---------
 
-* **1.2** (YYYY-MM-DD)
+* **2.0** (2023-12-01)
 
-  * Add testing for Django 2.2 (no code changes required).
+  * Remove support for Django < 3.2.
+
+  * Add support for Django 3.2, 4.1, 4.2 and 5.0.
+
+  * Add support for Python 3.8 to 3.11
+
+  * Drop support for Python < 3.8.
 
 * **1.1** (2018-06-06)
 

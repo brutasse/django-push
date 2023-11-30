@@ -1,6 +1,6 @@
 from django.contrib import admin, messages
 from django.utils import timezone
-from django.utils.translation import ugettext_lazy as _, ungettext
+from django.utils.translation import gettext_lazy as _, ngettext
 
 from django_push.subscriber.models import Subscription, SubscriptionError
 
@@ -40,13 +40,13 @@ class SubscriptionAmin(admin.ModelAdmin):
             except SubscriptionError:
                 failed += 1
         if count:
-            message = ungettext(
+            message = ngettext(
                 '%s subscription was successfully renewed.',
                 '%s subscriptions were successfully renewd.',
                 count) % count
             self.message_user(request, message)
         if failed:
-            message = ungettext(
+            message = ngettext(
                 'Failed to renew %s subscription.',
                 'Failed to renew %s subscriptions.',
                 failed) % failed
@@ -63,13 +63,13 @@ class SubscriptionAmin(admin.ModelAdmin):
             except SubscriptionError:
                 failed += 1
         if count:
-            message = ungettext(
+            message = ngettext(
                 'Successfully unsubscribed from %s topic.',
                 'Successfully unsubscribed from %s topics.',
                 count) % count
             self.message_user(request, message)
         if failed:
-            message = ungettext(
+            message = ngettext(
                 'Failed to unsubscribe from %s topic.',
                 'Failed to unsubscribe from %s topics.',
                 failed) % failed

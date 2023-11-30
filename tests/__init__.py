@@ -6,7 +6,7 @@ from requests import Response
 class BytesIO(BaseBytesIO):
     def read(self, *args, **kwargs):
         kwargs.pop('decode_content', None)
-        return super(BytesIO, self).read(*args, **kwargs)
+        return super().read(*args, **kwargs)
 
 
 def response(status_code=200, content='', headers={}):

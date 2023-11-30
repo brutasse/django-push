@@ -1,14 +1,7 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 import logging
 
 from datetime import timedelta
-
-try:
-    from urllib.parse import urlparse
-except ImportError:  # python2
-    from urlparse import urlparse
+from urllib.parse import urlparse
 
 import requests
 
@@ -16,7 +9,7 @@ from django.conf import settings
 from django.db import models, transaction
 from django.urls import reverse
 from django.utils import timezone
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from .utils import get_hub_credentials, generate_random_string, get_domain
 
@@ -61,7 +54,7 @@ class Subscription(models.Model):
 
     objects = SubscriptionManager()
 
-    def __unicode__(self):
+    def __str__(self):
         return '%s: %s' % (self.topic, self.hub)
 
     def set_expiration(self, seconds):

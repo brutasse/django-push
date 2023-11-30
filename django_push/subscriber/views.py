@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 class CallbackView(generic.View):
     @method_decorator(csrf_exempt)
     def dispatch(self, *args, **kwargs):
-        return super(CallbackView, self).dispatch(*args, **kwargs)
+        return super().dispatch(*args, **kwargs)
 
     def get(self, request, pk, *args, **kwargs):
         subscription = get_object_or_404(Subscription, pk=pk)
